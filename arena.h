@@ -3,6 +3,18 @@
 
 #define NODE_TABLE_SIZE 9
 
+typedef struct Arena{
+    Arena_Header arena_header;
+    RB_Tree rb_tree;   
+    RB_Node node_pool[total_nodes];
+    Chunk user_area[]
+}Arena;
+
+typedef struct Arena_List_Node{
+    Arena arena;
+    Arena_List_Node *next;
+}Arena_List_Node;
+
 typedef struct RB_Node{
     void *addr;
     size_t size;
@@ -16,6 +28,7 @@ typedef struct RB_Tree{
     RB_Node *root;
 } RB_Tree;
 
+//should be stored in static memory...
 typedef struct Node_Table {
         //value 3 2 1 512 256 128 64 32 Total
         //count
@@ -37,6 +50,11 @@ typedef struct Arena_Header{
     struct Arena_Header *next;
     struct Arena_Header *prev;
 }Arena_Header;
+
+typedef struct Chunk{
+    Chunk_Header chunk_header;
+    uint8_t data[size]
+}Chunk;
 
 typedef struct Chunk_Header{
     size_t size; //full chunk size including header

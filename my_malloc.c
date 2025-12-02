@@ -1,12 +1,26 @@
 #include <stdint.h>
 #include <stdio.h>
+#include <unistd.h>
+#include <sys/mman.h>
+
 #include "arena.h"
+
+#define BASE_ARENA_SIZE 65536
+#define THRESHOLD_1 45056
+#define THRESHOLD_2 55296
+#define NODE_TABLE_WIDTH 9 
+
+enum G_RATIO{
+    single_page,
+    doulbe_page,
+};
+
 //SHOULD I MUTEX THE TABLE UPDATES???
 // GOLDEN RATIO NEEDS TO FIT INTO N * 4kb... needs to adapt to different amounts of available memory
-// 4KB:            3    2   1   512     256     128     64      32  Stuff...(in bytes)
+// 4KB:            3k    2k   1k   512     256     128     64      32  Stuff...(in bytes)
 //
 //
-// 8KB:            3    2   1   512     256     128     64      32  Stuff...(in bytes)
+// 8KB:            3k    2k   1k   512     256     128     64      32  Stuff...(in bytes)
 //
 // 
 
@@ -19,17 +33,58 @@
 
     !!! On error, these functions return NULL and set errno. (malloc, realloc, calloc)
 */
-void *my_malloc(size_t size){
+static void* arena_list_start = NULL;
+
+static const uint32_t one_page_rb_node[NODE_TABLE_SIZE] = {};
+static const uint32_t two_page_rb_node[NODE_TABLE_SIZE] = {};
+
+void initialize_node_table(Node_Table *table, size_t size){
+    
+}
+
+Arena_List_Node *create_arena_list_node(size_t size){
+   void *region = mmap(0, size, PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE, -1, 0); 
+   Arena_List_Node *node = (Arena_List_Node *)region;
+   node->arena.arena_header.base = region;
+   node->arena.arena_header.size = size;
+   node->arena.arena_header.free_tree.root = NULL;
+   initialize_node_table(&node->arena.arena_header.node_table, size);
+   node->next = NULL;
+
+   return node;
+}
+
+void *my_malloc(size_t m_size){
     /*look for first fit size in a table
     //***ARENAS linked list will be 64kb
 
     1) NO ARENA, CREATE/MMAP ARENA 
-        IF no arena and less than (32kb - stuff):
+        IF no arena and less than (~44k):
+            use 8kb
             then create and allocate new arena of 64kb,
             with the golden ratio to fill the remaining buckets rounding up to next 4kb... 
             so if (2.5k allocation + stuff) then 4kb so fill the remaining 60kb with the 8K golden ratio
+            */
+           if(m_size == 0){
+            //pass pointer that can be passed to free thus smallest possible allocation
+           }
+            
+            if(arena_list_start = NULL){
+                    Arena_List_Node *head = NULL;
+                if(m_size < THRESHOLD_1){
+                    head = create_arena_list_node(BASE_ARENA_SIZE);
+                    arena_list_start = (void *)head;
+                    Arena_List_Node *current_arena = add_to_arena_list(m_size, doulbe_page);
+                }
 
-        ELSE IF no arena and >= (32kb - stuff):
+            }
+
+
+/*
+        ELSE IF no arena and >= (~44kb):
+            use 4kb
+
+        ELSE IF no arena and >= (~54kb):
             create an arena that is a multiple of 64kb and is > than space to map +
             build out remaining areas with the golden ratio with remaining areas
 
