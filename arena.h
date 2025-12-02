@@ -1,18 +1,20 @@
 #include <stdint.h>
 #include <stdio.h>
+#include <stdbool.h>
 
 #define NODE_TABLE_SIZE 9
 
 typedef struct Arena{
     Arena_Header arena_header;
     RB_Tree rb_tree;   
-    RB_Node node_pool[total_nodes];
+    RB_Node node_pool[rb_node_table[NODE_TABLE_SIZE - 1]];
     Chunk user_area[]
 }Arena;
 
 typedef struct Arena_List_Node{
     Arena arena;
     Arena_List_Node *next;
+    Arena_List_Node *prev;
 }Arena_List_Node;
 
 typedef struct RB_Node{
@@ -28,27 +30,19 @@ typedef struct RB_Tree{
     RB_Node *root;
 } RB_Tree;
 
-//should be stored in static memory...
 typedef struct Node_Table {
-        //value 3 2 1 512 256 128 64 32 Total
-        //count
-        //used >>> when total zero if free() then remove arena
-        //free
-        uint32_t rb_node_value[NODE_TABLE_SIZE]; //not sure if I need
-        uint32_t rb_node_count[NODE_TABLE_SIZE];
         uint32_t rb_node_used[NODE_TABLE_SIZE];
     }Node_Table;
 
 typedef struct Arena_Header{
     void *base;
+    bool large_alloc; 
     size_t size;
     RB_Tree free_tree;
     RB_Node *rb_node_pool;
     Node_Table node_table;
     //pthread_mutex_t lock; if wanted multithread-safe
     //size_t used_bytes
-    struct Arena_Header *next;
-    struct Arena_Header *prev;
 }Arena_Header;
 
 typedef struct Chunk{

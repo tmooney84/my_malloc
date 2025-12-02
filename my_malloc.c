@@ -2,28 +2,13 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <sys/mman.h>
+#include <string.h>
 
 #include "arena.h"
 
 #define BASE_ARENA_SIZE 65536
-#define THRESHOLD_1 45056
-#define THRESHOLD_2 55296
+#define LARGE_SIZE 3072 
 #define NODE_TABLE_WIDTH 9 
-
-enum G_RATIO{
-    single_page,
-    doulbe_page,
-};
-
-//SHOULD I MUTEX THE TABLE UPDATES???
-// GOLDEN RATIO NEEDS TO FIT INTO N * 4kb... needs to adapt to different amounts of available memory
-// 4KB:            3k    2k   1k   512     256     128     64      32  Stuff...(in bytes)
-//
-//
-// 8KB:            3k    2k   1k   512     256     128     64      32  Stuff...(in bytes)
-//
-// 
-
 
 /*
        The malloc() function allocates size bytes and returns a pointer
@@ -35,21 +20,47 @@ enum G_RATIO{
 */
 static void* arena_list_start = NULL;
 
-static const uint32_t one_page_rb_node[NODE_TABLE_SIZE] = {};
-static const uint32_t two_page_rb_node[NODE_TABLE_SIZE] = {};
+        //value 32 64 128 256 512 1k 2k 3k total
+        //64kb: 64 40 32  24  16  12  6  4 198
+        //used >>> when total zero if free() then remove arena
+static const uint32_t rb_node_table[NODE_TABLE_SIZE] = {64, 40, 32, 24, 16, 12, 6, 4, 198};
 
-void initialize_node_table(Node_Table *table, size_t size){
-    
+void set_default_arena_header(Arena_Header *header, void *mmap_region){
+        header->base = mmap_region;
+        header->large_alloc = false; 
+        header->size = BASE_ARENA_SIZE;
+        header->free_tree.root = NULL;
+        header->rb_node_pool = mmap_region; //PLACE HOLDER CHANGE!!!
+        memset(header->node_table.rb_node_used, 0, NODE_TABLE_SIZE * sizeof(uint32_t));
+        return;
 }
 
 Arena_List_Node *create_arena_list_node(size_t size){
-   void *region = mmap(0, size, PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE, -1, 0); 
-   Arena_List_Node *node = (Arena_List_Node *)region;
-   node->arena.arena_header.base = region;
-   node->arena.arena_header.size = size;
-   node->arena.arena_header.free_tree.root = NULL;
-   initialize_node_table(&node->arena.arena_header.node_table, size);
-   node->next = NULL;
+    if(size < LARGE_SIZE){
+        void *mmap_region = mmap(0, size, PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE, -1, 0); 
+        Arena_List_Node *node = (Arena_List_Node *)mmap_region;
+
+        //LEFT OFF HERE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        //build rb_node_pool
+
+        //build chunk and chunk headers(headers outside of chunks)
+        //set default Arena_Header
+        set_default_arena_header(&node->arena.arena_header, mmap_region);
+        
+
+        //linked list pointers
+        node->next = NULL;
+        node->prev = NULL;
+        return;
+    }
+    else if(size >= LARGE_SIZE){
+
+    }
+    else{
+        perror("Error... incompatible size.\n");
+        return NULL;
+    }
+   
 
    return node;
 }
@@ -59,7 +70,7 @@ void *my_malloc(size_t m_size){
     //***ARENAS linked list will be 64kb
 
     1) NO ARENA, CREATE/MMAP ARENA 
-        IF no arena and less than (~44k):
+        IF no arena and less than (3k):
             use 8kb
             then create and allocate new arena of 64kb,
             with the golden ratio to fill the remaining buckets rounding up to next 4kb... 
@@ -71,18 +82,15 @@ void *my_malloc(size_t m_size){
             
             if(arena_list_start = NULL){
                     Arena_List_Node *head = NULL;
-                if(m_size < THRESHOLD_1){
-                    head = create_arena_list_node(BASE_ARENA_SIZE);
+                    head = create_arena_list_node(m_size);
                     arena_list_start = (void *)head;
                     Arena_List_Node *current_arena = add_to_arena_list(m_size, doulbe_page);
-                }
-
             }
 
 
 /*
-        ELSE IF no arena and >= (~44kb):
-            use 4kb
+        ELSE IF no arena and >= (3kb):
+            mmap directly >>> 
 
         ELSE IF no arena and >= (~54kb):
             create an arena that is a multiple of 64kb and is > than space to map +
