@@ -8,7 +8,7 @@ typedef struct Arena{
     Arena_Header arena_header;
     RB_Tree rb_tree;   
     RB_Node node_pool[rb_node_table[NODE_TABLE_SIZE - 1]];
-    Chunk user_area[]
+    size_t chunks_area_offset
 }Arena;
 
 typedef struct Arena_List_Node{
@@ -47,8 +47,12 @@ typedef struct Arena_Header{
 
 typedef struct Chunk{
     Chunk_Header chunk_header;
-    uint8_t data[size]
+    //data stored after header;
 }Chunk;
+
+//header_size = sizeof(Chunk_Header);
+//Next Chunk stored &chunk[0] + header_size + chunk.chunk_header.size;
+//continues through the rest of the user area
 
 typedef struct Chunk_Header{
     size_t size; //full chunk size including header

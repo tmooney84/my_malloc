@@ -10,6 +10,8 @@
 #define LARGE_SIZE 3072 
 #define NODE_TABLE_WIDTH 9 
 
+//REMEMBER TO ADD 16-BIT ALIGNMENT!!!
+
 /*
        The malloc() function allocates size bytes and returns a pointer
        to the allocated memory.  The memory is not initialized.  If size
