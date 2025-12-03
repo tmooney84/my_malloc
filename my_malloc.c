@@ -6,9 +6,6 @@
 
 #include "arena.h"
 
-#define BASE_ARENA_SIZE 65536
-#define LARGE_SIZE 3072 
-#define NODE_TABLE_WIDTH 9 
 
 //REMEMBER TO ADD 16-BIT ALIGNMENT!!!
 
@@ -22,34 +19,79 @@
 */
 static void* arena_list_start = NULL;
 
-        //value 32 64 128 256 512 1k 2k 3k total
-        //64kb: 64 40 32  24  16  12  6  4 198
-        //used >>> when total zero if free() then remove arena
-static const uint32_t rb_node_table[NODE_TABLE_SIZE] = {64, 40, 32, 24, 16, 12, 6, 4, 198};
+void build_rb_idx_table(){
+    int idx = -1;
+   for(int i = 0; i < NODE_TABLE_SIZE - 1; i++){
+        idx += rb_node_table[i];
+        rb_idx_table[i] = idx;
+   } 
 
-void set_default_arena_header(Arena_Header *header, void *mmap_region){
-        header->base = mmap_region;
-        header->large_alloc = false; 
-        header->size = BASE_ARENA_SIZE;
-        header->free_tree.root = NULL;
-        header->rb_node_pool = mmap_region; //PLACE HOLDER CHANGE!!!
-        memset(header->node_table.rb_node_used, 0, NODE_TABLE_SIZE * sizeof(uint32_t));
+   //should give 197 as the last index
+   rb_idx_table[NODE_TABLE_SIZE - 1] = rb_node_table[NODE_TABLE_SIZE - 1] - 1;
+
+   return;
+}
+
+size_t get_rb_node_size(int idx){
+   for(int i = 0; i < NODE_TABLE_SIZE - 2; i++){
+    if(idx >= rb_idx_table[i] && idx < rb_idx_table[i + 1] && i < NODE_TABLE_SIZE - 3){
+        return rb_node_table[i];
+    }
+    else if(idx >= rb_idx_table[i] && idx <= rb_idx_table[i + 1] && i == NODE_TABLE_SIZE - 2){
+        return rb_node_table[i];
+    }
+    else
+        perror("Error getting rb_node_size\n");
+        return -1;
+   }
+        perror("Error getting rb_node_size\n");
+        return -1;
+}
+
+void build_default_rb_node_pool(Arena_List_Node *node){
+    RB_Node *pool = node->arena.node_pool;
+
+    for(int i = 0; i < rb_node_table[NODE_TABLE_SIZE -1]; i++){
+       pool[i].addr = pool + (i * sizeof(RB_Node));
+       pool[i].size =  get_rb_node_size(i);
+       pool[i].left = NULL;
+       pool[i].right = NULL;
+       pool[i].parent = NULL;
+       pool[i].color = NO_COLOR;
+    }
+
+    return;
+}
+
+//void set_default_arena_header(Arena_Header *header, void *mmap_region){
+void set_default_arena_header(Arena_List_Node *node){
+        node->arena.arena_header.base = node;
+        node->arena.arena_header.large_alloc = false; 
+        node->arena.arena_header.size = BASE_ARENA_SIZE;
+        node->arena.arena_header.free_tree.root = NULL;
+        node->arena.arena_header.rb_node_pool = node->arena.node_pool; 
+        memset(node->arena.arena_header.node_table.rb_node_used, 0, NODE_TABLE_SIZE * sizeof(uint32_t));
         return;
+}
+
+void build_arena(Arena_List_Node *node){
+    build_default_rb_node_pool(node);
+
+    //build chunk and chunk headers(headers outside of chunks)
+    //set default Arena_Header
+    set_default_arena_header(node);
+        
+
 }
 
 Arena_List_Node *create_arena_list_node(size_t size){
     if(size < LARGE_SIZE){
         void *mmap_region = mmap(0, size, PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE, -1, 0); 
         Arena_List_Node *node = (Arena_List_Node *)mmap_region;
-
-        //LEFT OFF HERE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        //build rb_node_pool
-
-        //build chunk and chunk headers(headers outside of chunks)
-        //set default Arena_Header
-        set_default_arena_header(&node->arena.arena_header, mmap_region);
         
-
+        //build arena
+        build_arena(node);
+        
         //linked list pointers
         node->next = NULL;
         node->prev = NULL;
@@ -68,6 +110,9 @@ Arena_List_Node *create_arena_list_node(size_t size){
 }
 
 void *my_malloc(size_t m_size){
+    //builds the 2nd array for caculaculating chunk sizes     
+    build_rb_idx_table();
+
     /*look for first fit size in a table
     //***ARENAS linked list will be 64kb
 
@@ -86,7 +131,8 @@ void *my_malloc(size_t m_size){
                     Arena_List_Node *head = NULL;
                     head = create_arena_list_node(m_size);
                     arena_list_start = (void *)head;
-                    Arena_List_Node *current_arena = add_to_arena_list(m_size, doulbe_page);
+                    Arena_List_Node *current_arena = add_to_arena_list(m_size);
+                    //^^^LEFT OFF HERE
             }
 
 

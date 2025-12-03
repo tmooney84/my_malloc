@@ -3,12 +3,20 @@
 #include <stdbool.h>
 
 #define NODE_TABLE_SIZE 9
+#define BASE_ARENA_SIZE 65536
+#define LARGE_SIZE 3072 
+
+        //value 32 64 128 256 512 1k 2k 3k total
+        //64kb: 64 40 32  24  16  12  6  4 198
+        //used >>> when total zero if free() then remove arena
+static const uint32_t rb_node_table[NODE_TABLE_SIZE] = {64, 40, 32, 24, 16, 12, 6, 4, 198};
+static uint32_t rb_idx_table[NODE_TABLE_SIZE] = {};
 
 typedef struct Arena{
     Arena_Header arena_header;
     RB_Tree rb_tree;   
     RB_Node node_pool[rb_node_table[NODE_TABLE_SIZE - 1]];
-    size_t chunks_area_offset
+    void *chunks_start_addr;
 }Arena;
 
 typedef struct Arena_List_Node{
@@ -23,7 +31,7 @@ typedef struct RB_Node{
     struct RBNode *left;
     struct RBNode *right;
     struct RBNode *parent;
-    enum{RED, BLACK} color;
+    enum{NO_COLOR, RED, BLACK} color;
 }RB_Node;
 
 typedef struct RB_Tree{
