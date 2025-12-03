@@ -48,6 +48,8 @@ size_t get_rb_node_size(int idx){
         return -1;
 }
 
+
+
 void set_default_arena_header(Arena_List_Node *node){
         node->arena.arena_header.base = node;
         node->arena.arena_header.large_alloc = false; 
@@ -86,41 +88,65 @@ build_default_chunks_area(void *chunks_start){
     }
 }
 
+//TODO: need to build out free_tree functionality (ll to start then rb tree)
 void build_arena(Arena_List_Node *node){
     build_default_arena_header(node);
     build_default_rb_node_pool(node);
-    node->arena.chunks_start_addr = node + sizeof(Arena);
+    node->arena.chunks_start_addr = node + sizeof(Arena_List_Node);
     build_default_chunks_area(node->arena.chunks_start_addr);
-    //build_free_tree()
+    //build_free_tree() >>> return root// head for linked list
+    //rb_tree >>> after building free tree, set node->arena.rb_tree = rb root node!!!
 
     return;
 }
 
-Arena_List_Node *create_arena_list_node(size_t size){
-    if(size < LARGE_SIZE){
+Arena_List_Node *create_default_arena_list_node(){
+    Arena_List_Node *node = NULL;
+
         void *mmap_region = mmap(0, BASE_ARENA_SIZE, PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE, -1, 0); 
-        Arena_List_Node *node = (Arena_List_Node *)mmap_region;
-        
+        node = (Arena_List_Node *)mmap_region;
         //build arena
         build_arena(node);
         
         //linked list pointers
         node->next = NULL;
         node->prev = NULL;
-        return;
-    }
-    else if(size >= LARGE_SIZE){
-        //needs to have mmap of size + custom info?
-        void *mmap_region = mmap(0, , PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE, -1, 0); 
+        return node;
+}
 
-    }
-    else{
-        perror("Error... incompatible size.\n");
-        return NULL;
-    }
-   
+Arena_List_Node *create_custom_arena_list_node(size_t size){
+    Arena_List_Node *node = NULL;
+
+    //needs to have mmap of size + custom info? 1.15 * size or more exact???
+    void *mmap_region = mmap(0, size + sizeof(Arena_List_Node), PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE, -1, 0); 
+    node = (Arena_List_Node *)mmap_region;
+    node->arena.chunks_start_addr = node + sizeof(Arena_List_Node);
+    node->arena.arena_header.base = node;
+    node->arena.arena_header.large_alloc = true;
+    node->arena.arena_header.size = size;
 
    return node;
+}
+
+/*TODO: find bucket with best fit...
+    1)look at table starting with the first bucket over the size to allocate
+    ...could use bitwise and then work way up to the table?
+    2)use list/rb tree to find that size
+    3)use that bucket and subtract 1 from that part of the table
+*/
+int32_t add_to_chunk_in_arena(size_t m_size, Arena_List_Node *node){
+    if(){
+        
+
+    }
+    else if(){
+        return 0; //Not found in this arena
+    }
+
+    else{
+        perror("Error adding to chunk\n");
+        return -1;
+    }
 }
 
 void *my_malloc(size_t m_size){
@@ -132,60 +158,67 @@ void *my_malloc(size_t m_size){
 
     1) NO ARENA, CREATE/MMAP ARENA 
         IF no arena and less than (3k):
-            use 8kb
             then create and allocate new arena of 64kb,
-            with the golden ratio to fill the remaining buckets rounding up to next 4kb... 
-            so if (2.5k allocation + stuff) then 4kb so fill the remaining 60kb with the 8K golden ratio
             */
-           if(m_size == 0){
+    if(m_size == 0){
             //pass pointer that can be passed to free thus smallest possible allocation
-           }
+    }
             
            //***if no arena, create arena place on list and 
            //***then return chunk addr + update rb tree and table
-            if(arena_list_start = NULL){
-                    Arena_List_Node *head = NULL;
-                    head = create_arena_list_node(m_size);
-                    arena_list_start = (void *)head;
-                    Arena_List_Node *current_arena = add_to_arena_list(m_size);
+    if(!arena_list_start && m_size <= LARGE_SIZE){
+        Arena_List_Node *head = NULL;
+        head = create_default_arena_list_node();
+        arena_list_start = (void *)head;
                     
-                    //get initial chunk and update rb_tree + table accordingly
-            }
+        //get initial chunk and update rb_tree + table accordingly
+    }
 
-
+    //ELSE IF no arena and >= (3kb): custom arena
+    else if(!arena_list_start && m_size > LARGE_SIZE){
+        Arena_List_Node *head = NULL;
+        head = create_custom_arena_list_node(m_size);
+        arena_list_start = (void *)head;
+    } 
+//************FOR SEARCHING ARENAS IN ARENA LIST, CHECK ARENA_HEADER
+//***************FOR THE large_alloc, if TRUE, SKIP TO THE NEXT ARENA
+//***************IF THERE IS NONE AFTER, CREATE NEW DEFAULT ARENA
 /*
-        ELSE IF no arena and >= (3kb):
-            mmap directly >>> 
-
-        ELSE IF no arena and >= (~54kb):
-            create an arena that is a multiple of 64kb and is > than space to map +
-            build out remaining areas with the golden ratio with remaining areas
-
-        ELSE 
-            return NULL and set errno
-
     2) ARENA EXISTS
-        IF < 2kb + stuff ~3kb:
-            Check for best fit free buckets if under 3kb + Stuff (~4kb)
-            IF THE NEXT SIZE UP EXISTS (ie: 17 bytes in 32 byte buckets is full check the 64 byte buckets
-            and so on until up to 3kb)
-                GO INTO R-B Tree and RETRIEVE BUCKET, USE and DECREMENT Local Pointer Map
-            IF ALL FULL:
-                check next arena in the list
-            IF NO SPACE EXISTS: 
-                CREATE/MMAP NEW ARENA and add to the end of the ARENA LIST and place the
-            malloc() in it
+    if(arena_list_start && m_size <= LARGE_SIZE){
+        I) go to first arena in list check if large_alloc == false
+            a) if so then check table to see for 2^n larger and work
+            way up
+                i) if no appropriate chunk exists
+                    create new arena
+                    add the m_size to the new arena
+                    put the new arena at the end of the list
 
-        ELSE IF >= 2kb + stuff ~3kb && < 59 + stuff ~60kb:
-            CREATE NEW ARENA, ADD TO LIST and place new malloc in it, fill the rest of it with the 
-            4k Golden Ratio dependent on remaining size
+            
+            b) else if large_alloc != false && ALN->next skip to next
 
-        ELSE IF >= 59 + stuff ~60kb:
-            CREATE NEW ARENA with the size of N * 64kb where malloc rounds up to that ratio and fills the
-            rest with either the 8k Golden Ratio or 4k Golden Ratio dependent on remaining size
+            c) else if large_alloc != false && ALN->next == NULL
+                create new 
+    }
+*/
+    if(arena_list_start && m_size <= LARGE_SIZE){
+        Arena_List_Node *itr = arena_list_start; 
+        for(; itr != NULL && 0 == add_to_chunk_in_arena(m_size, itr); itr = itr->next){}
+        //if successfully added to arena then skip
+        //else if through whole list and no success finding a chunk create new
+        //Arena_List_Node and add to it
+        itr->next =
 
-        ELSE 
-            return NULL and set errno
+    }
+        /*
+    if(arena_list_start && m_size <= LARGE_SIZE){
+        i) create_custom_arena_list_node(m_size)
+        ii) add to end of arena list
+
+    }
+         vvv at some point   
+        //Arena_List_Node *current_arena = add_to_arena_list(m_size);
+        
 */
 
     }

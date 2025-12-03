@@ -20,9 +20,10 @@ typedef struct Arena{
 }Arena;
 
 typedef struct Arena_List_Node{
-    Arena arena;
+    //next && prev node above so chunks don't overwrite the pointers
     Arena_List_Node *next;
     Arena_List_Node *prev;
+    Arena arena;
 }Arena_List_Node;
 
 typedef struct RB_Node{
