@@ -53,6 +53,13 @@ typedef struct Arena_Header{
     //size_t used_bytes
 }Arena_Header;
 
+typedef struct Chunk_Header{
+    size_t size; //full chunk size including header
+    enum{FREE, IN_USE} flags; // FREE or IN_USE
+    size_t prev_size;
+}Chunk_Header;
+
+
 typedef struct Chunk{
     Chunk_Header chunk_header;
     //data stored after header;
@@ -61,11 +68,6 @@ typedef struct Chunk{
 //header_size = sizeof(Chunk_Header);
 //Next Chunk stored &chunk[0] + header_size + chunk.chunk_header.size;
 //continues through the rest of the user area
-
-typedef struct Chunk_Header{
-    size_t size; //full chunk size including header
-    uint32_t flags; // FREE or IN_USE
-}Chunk_Header;
 
 
 //=====================================================//

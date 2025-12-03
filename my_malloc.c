@@ -48,6 +48,16 @@ size_t get_rb_node_size(int idx){
         return -1;
 }
 
+void set_default_arena_header(Arena_List_Node *node){
+        node->arena.arena_header.base = node;
+        node->arena.arena_header.large_alloc = false; 
+        node->arena.arena_header.size = BASE_ARENA_SIZE;
+        node->arena.arena_header.free_tree.root = NULL;
+        node->arena.arena_header.rb_node_pool = node->arena.node_pool; 
+        memset(node->arena.arena_header.node_table.rb_node_used, 0, NODE_TABLE_SIZE * sizeof(uint32_t));
+        return;
+}
+
 void build_default_rb_node_pool(Arena_List_Node *node){
     RB_Node *pool = node->arena.node_pool;
 
@@ -63,30 +73,32 @@ void build_default_rb_node_pool(Arena_List_Node *node){
     return;
 }
 
-//void set_default_arena_header(Arena_Header *header, void *mmap_region){
-void set_default_arena_header(Arena_List_Node *node){
-        node->arena.arena_header.base = node;
-        node->arena.arena_header.large_alloc = false; 
-        node->arena.arena_header.size = BASE_ARENA_SIZE;
-        node->arena.arena_header.free_tree.root = NULL;
-        node->arena.arena_header.rb_node_pool = node->arena.node_pool; 
-        memset(node->arena.arena_header.node_table.rb_node_used, 0, NODE_TABLE_SIZE * sizeof(uint32_t));
-        return;
+build_default_chunks_area(void *chunks_start){
+    void *current_header_addr = chunks_start;
+    size_t chunk_count = 0;
+    for(chunk_count; chunk_count < rb_node_table[NODE_TABLE_SIZE - 1]; chunk_count++){
+       Chunk_Header *chunk_header = current_header_addr;
+       chunk_header->size = get_rb_node_size(chunk_count);
+       chunk_header->flags = FREE;
+       chunk_header->prev_size = chunk_header->size; //future use in coalescing
+
+       current_header_addr += sizeof(Chunk_Header) + chunk_header->size;
+    }
 }
 
 void build_arena(Arena_List_Node *node){
+    build_default_arena_header(node);
     build_default_rb_node_pool(node);
+    node->arena.chunks_start_addr = node + sizeof(Arena);
+    build_default_chunks_area(node->arena.chunks_start_addr);
+    //build_free_tree()
 
-    //build chunk and chunk headers(headers outside of chunks)
-    //set default Arena_Header
-    set_default_arena_header(node);
-        
-
+    return;
 }
 
 Arena_List_Node *create_arena_list_node(size_t size){
     if(size < LARGE_SIZE){
-        void *mmap_region = mmap(0, size, PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE, -1, 0); 
+        void *mmap_region = mmap(0, BASE_ARENA_SIZE, PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE, -1, 0); 
         Arena_List_Node *node = (Arena_List_Node *)mmap_region;
         
         //build arena
@@ -98,6 +110,8 @@ Arena_List_Node *create_arena_list_node(size_t size){
         return;
     }
     else if(size >= LARGE_SIZE){
+        //needs to have mmap of size + custom info?
+        void *mmap_region = mmap(0, , PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE, -1, 0); 
 
     }
     else{
@@ -127,12 +141,15 @@ void *my_malloc(size_t m_size){
             //pass pointer that can be passed to free thus smallest possible allocation
            }
             
+           //***if no arena, create arena place on list and 
+           //***then return chunk addr + update rb tree and table
             if(arena_list_start = NULL){
                     Arena_List_Node *head = NULL;
                     head = create_arena_list_node(m_size);
                     arena_list_start = (void *)head;
                     Arena_List_Node *current_arena = add_to_arena_list(m_size);
-                    //^^^LEFT OFF HERE
+                    
+                    //get initial chunk and update rb_tree + table accordingly
             }
 
 
