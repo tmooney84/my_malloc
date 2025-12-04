@@ -2,14 +2,14 @@
 #include <stdio.h>
 #include <stdbool.h>
 
-#define NODE_TABLE_SIZE 9
+#define NODE_TABLE_SIZE 8
 #define BASE_ARENA_SIZE 65536
-#define LARGE_SIZE 3072 
+#define MAX_SIZE 3072 
 
-        //value 32 64 128 256 512 1k 2k 3k total
-        //64kb: 64 40 32  24  16  12  6  4 198
+        //value 32 64 128 256 512 1k 2k total
+        //64kb: 64 40 30  24  16  12  8 194
         //used >>> when total zero if free() then remove arena
-static const uint32_t rb_node_table[NODE_TABLE_SIZE] = {64, 40, 32, 24, 16, 12, 6, 4, 198};
+static const uint32_t rb_node_table[NODE_TABLE_SIZE] = {64, 40, 30, 24, 16, 12, 8, 194};
 static uint32_t rb_idx_table[NODE_TABLE_SIZE] = {};
 
 typedef struct Arena{
@@ -60,7 +60,7 @@ typedef struct Chunk_Header{
     size_t prev_size;
 }Chunk_Header;
 
-
+//!!! is this necessary?
 typedef struct Chunk{
     Chunk_Header chunk_header;
     //data stored after header;
