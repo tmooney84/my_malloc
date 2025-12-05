@@ -5,26 +5,26 @@
 #define NODE_TABLE_SIZE 8
 #define BASE_ARENA_SIZE 65536
 #define MAX_SIZE 3072 
+#define NODE_POOL_SIZE 194   
 
+//NEEDS TO BE MANUALLY UPDATED TO LAST ELEMENT IN rb_node_table
         //value 32 64 128 256 512 1k 2k total
         //64kb: 64 40 30  24  16  12  8 194
         //used >>> when total zero if free() then remove arena
 static const uint32_t rb_node_table[NODE_TABLE_SIZE] = {64, 40, 30, 24, 16, 12, 8, 194};
 static uint32_t rb_idx_table[NODE_TABLE_SIZE] = {};
 
-typedef struct Arena{
-    Arena_Header arena_header;
-    RB_Tree rb_tree;   
-    RB_Node node_pool[rb_node_table[NODE_TABLE_SIZE - 1]];
-    void *chunks_start_addr;
-}Arena;
+typedef enum {
+    NO_COLOR = 0,
+    RED      = 1,
+    BLACK    = 2
+} Color;
 
-typedef struct Arena_List_Node{
-    //next && prev node above so chunks don't overwrite the pointers
-    Arena_List_Node *next;
-    Arena_List_Node *prev;
-    Arena arena;
-}Arena_List_Node;
+static const char *ColorNames[] = {
+    "NO_COLOR",
+    "RED",
+    "BLACK",
+};
 
 typedef struct RB_Node{
     void *addr;
@@ -32,7 +32,7 @@ typedef struct RB_Node{
     struct RBNode *left;
     struct RBNode *right;
     struct RBNode *parent;
-    enum{NO_COLOR, RED, BLACK} color;
+    Color color;
 }RB_Node;
 
 typedef struct RB_Tree{
@@ -49,6 +49,7 @@ typedef struct Arena_Header{
     size_t size;
     RB_Tree free_tree;
     RB_Node *rb_node_pool;
+    void *chunks_start_addr;
     Node_Table node_table;
     //pthread_mutex_t lock; if wanted multithread-safe
     //size_t used_bytes
@@ -65,6 +66,20 @@ typedef struct Chunk{
     Chunk_Header chunk_header;
     //data stored after header;
 }Chunk;
+
+typedef struct Arena{
+    Arena_Header arena_header;
+    RB_Tree rb_tree;   
+    RB_Node node_pool[NODE_POOL_SIZE];
+    //void *chunks_start_addr;
+}Arena;
+
+typedef struct Arena_List_Node{
+    //next && prev node above so chunks don't overwrite the pointers
+    struct Arena_List_Node *next;
+    struct Arena_List_Node *prev;
+    Arena arena;
+}Arena_List_Node;
 
 //header_size = sizeof(Chunk_Header);
 //Next Chunk stored &chunk[0] + header_size + chunk.chunk_header.size;

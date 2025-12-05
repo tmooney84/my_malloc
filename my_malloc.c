@@ -61,6 +61,7 @@ void set_default_arena_header(Arena_List_Node *node)
     node->arena.arena_header.size = BASE_ARENA_SIZE;
     node->arena.arena_header.free_tree.root = NULL;
     node->arena.arena_header.rb_node_pool = node->arena.node_pool;
+    node->arena.arena_header.chunks_start_addr = node + sizeof(Arena_List_Node);
     memset(node->arena.arena_header.node_table.rb_node_used, 0, NODE_TABLE_SIZE * sizeof(uint32_t));
     return;
 }
@@ -71,30 +72,25 @@ void build_default_rb_node_pool(Arena_List_Node *node)
 
     for (int i = 0; i < rb_node_table[NODE_TABLE_SIZE - 1]; i++)
     {
-        
-       /*
-        TODO: need to change pool[i].addr to match the beginning of the
-        chunk_header for chunk[i]... need to use the table to to that
-       */ 
-        
-        //pool[i].addr = pool + (i * sizeof(RB_Node));
+        //pool[i].addr >>> set in build_default_chunks_area() function
         pool[i].size = get_rb_node_size(i);
         pool[i].left = NULL;
         pool[i].right = NULL;
         pool[i].parent = NULL;
-        pool[i].color = NO_COLOR;
+        pool[i].color = RED;
     }
 
     return;
 }
 
-void build_default_chunks_area(void *chunks_start)
+void build_default_chunks_area(Arena_List_Node *node)
 {
-    void *current_header_addr = chunks_start;
+    void *current_header_addr = node->arena.arena_header.chunks_start_addr;
     size_t chunk_count = 0;
     for (chunk_count; chunk_count < rb_node_table[NODE_TABLE_SIZE - 1]; chunk_count++)
     {
-        Chunk_Header *chunk_header = current_header_addr;
+        Chunk_Header *chunk_header = (Chunk_Header *)current_header_addr;
+        node->arena.node_pool[chunk_count].addr = current_header_addr;
         chunk_header->size = get_rb_node_size(chunk_count);
         chunk_header->flags = FREE;
         chunk_header->prev_size = chunk_header->size; // future use in coalescing
@@ -108,8 +104,7 @@ void build_arena(Arena_List_Node *node)
 {
     build_default_arena_header(node);
     build_default_rb_node_pool(node);
-    node->arena.chunks_start_addr = node + sizeof(Arena_List_Node);
-    build_default_chunks_area(node->arena.chunks_start_addr);
+    build_default_chunks_area(node);
     // build_free_tree() >>> return root// head for linked list
     // rb_tree >>> after building free tree, set node->arena.rb_tree = rb root node!!!
 
@@ -138,10 +133,10 @@ Arena_List_Node *create_custom_arena_list_node(size_t size)
     // needs to have mmap of size + custom info? 1.15 * size or more exact???
     void *mmap_region = mmap(0, size + sizeof(Arena_List_Node), PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE, -1, 0);
     node = (Arena_List_Node *)mmap_region;
-    node->arena.chunks_start_addr = node + sizeof(Arena_List_Node);
     node->arena.arena_header.base = node;
     node->arena.arena_header.large_alloc = true;
     node->arena.arena_header.size = size;
+    node->arena.arena_header.chunks_start_addr = node + sizeof(Arena_List_Node);
 
     return node;
 }
