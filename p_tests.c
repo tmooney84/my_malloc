@@ -60,9 +60,10 @@ void print_arena_node_info(Arena_List_Node *node)
     printf("------------------ARENA HEADER----------------------\n");
     printf("node->arena.arena_header.base: %p\n", node->arena.arena_header.base);
     printf("node->arena.arena_header.large_alloc: %d\n", node->arena.arena_header.large_alloc);
-    printf("node->arena.arena_header.size: %ld\n", node->arena.arena_header.size);
+    printf("node->arena.arena_header.size: %ld bytes\n", node->arena.arena_header.size);
     printf("node->arena.arena_header.free_tree.root: %p\n", node->arena.arena_header.free_tree.root);
     printf("node->arena.arena_header.rb_node_pool: %p\n", node->arena.arena_header.rb_node_pool);
+    printf("node->arena.arena_header.chunks_start_addr: %p\n", node->arena.arena_header.chunks_start_addr);
     printf("node->arena.arena_header.node_table.rb_node_used: ");
     for (int i = 0; i < NODE_TABLE_SIZE; i++)
     {
@@ -73,10 +74,12 @@ void print_arena_node_info(Arena_List_Node *node)
     printf("node->arena.rb_tree.root: %p\n", node->arena.rb_tree.root);
     printf("...PUT TREE PRINT FUNCTION HERE...\n");
     printf("------------------RB POOL----------------------\n");
+    printf("------------------RB POOL----------------------\n");
+    printf("RB POOL starts at address: %p\n", &node->arena.node_pool);
     for (int i = 0; i < NODE_POOL_SIZE; i++)
     {
         printf("------------------RB NODE[%d]----------------------\n", i);
-        printf("RB_NODE[%d] addr: %p\n", i, node->arena.node_pool[i].addr);
+        printf("RB_NODE[%d] addr (points to chunk header): %p\n", i, node->arena.node_pool[i].addr);
         printf("RB_NODE[%d] size: %ld\n", i, node->arena.node_pool[i].size);
         printf("RB_NODE[%d] left: %p\n", i, node->arena.node_pool[i].left);
         printf("RB_NODE[%d] right: %p\n", i, node->arena.node_pool[i].right);
@@ -84,15 +87,15 @@ void print_arena_node_info(Arena_List_Node *node)
 
         if (node->arena.node_pool[i].color == NO_COLOR)
         {
-            printf(ANSI_COLOR_YELLOW "RB_NODE[%d] enum COLOR: NO_COLOR\n" ANSI_COLOR_RESET "\n", i);
+            printf(ANSI_COLOR_YELLOW "RB_NODE[%d] enum COLOR: NO_COLOR" ANSI_COLOR_RESET "\n", i);
         }
         else if (node->arena.node_pool[i].color == RED)
         {
-            printf(ANSI_COLOR_RED "RB_NODE[%d] enum COLOR: RED\n" ANSI_COLOR_RESET "\n", i);
+            printf(ANSI_COLOR_RED "RB_NODE[%d] enum COLOR: RED" ANSI_COLOR_RESET "\n", i);
         }
         else if (node->arena.node_pool[i].color == BLACK)
         {
-            printf(ANSI_COLOR_GREEN "RB_NODE[%d] enum COLOR: RED\n" ANSI_COLOR_RESET "\n", i);
+            printf(ANSI_COLOR_GREEN "RB_NODE[%d] enum COLOR: RED" ANSI_COLOR_RESET "\n", i);
         }
         else
         {
@@ -100,40 +103,41 @@ void print_arena_node_info(Arena_List_Node *node)
         }
     }
     printf(ANSI_COLOR_MAGENTA "------------------CHUNKS USER ARENA----------------------\n" ANSI_COLOR_RESET "\n");
-    printf("chunks_start_addr: %p\n", node->arena.arena_header.chunks_start_addr);
-    for (int i = 0; i < NODE_POOL_SIZE; i++)
-    {
-        printf("-----------------CHUNK[i]----------------\n");
-        void *current_header_addr = node->arena.arena_header.chunks_start_addr;
-        for (int i = 0; i < rb_node_table[NODE_TABLE_SIZE - 1]; i++)
-        {
-            Chunk_Header *chunk_header = (Chunk_Header *)current_header_addr;
-            printf("Chunk_Header Address: %p\n", current_header_addr);
-            printf("Chunk Size (not including chunk header): %ld bytes", (chunk_header->size - sizeof(Chunk_Header)));
-            if (chunk_header->flags == FREE)
-            {
-                printf(ANSI_COLOR_CYAN "Chunk Flags: FREE\n" ANSI_COLOR_RESET "\n");
-            }
-            else if (chunk_header->flags == IN_USE)
-            {
-                printf(ANSI_COLOR_YELLOW "Chunk Flags: IN_USE\n" ANSI_COLOR_RESET "\n");
-            }
-            else
-            {
-                printf(ANSI_COLOR_RED "!!!CHUNK HEADER ERROR!!!\n" ANSI_COLOR_RESET "\n");
-            }
-            printf("Prev_size(should be same as size): %ld bytes", chunk_header->size - sizeof(Chunk_Header));
+    // printf("chunks_start_addr: %p\n", node->arena.arena_header.chunks_start_addr);
+    // for (int i = 0; i < NODE_POOL_SIZE; i++)
+    // {
+    //     printf("-----------------CHUNK[i]----------------\n");
+    //     void *current_header_addr = node->arena.arena_header.chunks_start_addr;
+    //     for (int i = 0; i < rb_node_table[NODE_TABLE_SIZE - 1]; i++)
+    //     {
+    //         Chunk_Header *chunk_header = (Chunk_Header *)current_header_addr;
+    //         printf("Chunk_Header Address: %p\n", current_header_addr);
+    //         printf("Chunk Size (not including chunk header): %ld bytes", (chunk_header->size - sizeof(Chunk_Header)));
+    //         if (chunk_header->flags == FREE)
+    //         {
+    //             printf(ANSI_COLOR_CYAN "Chunk Flags: FREE\n" ANSI_COLOR_RESET "\n");
+    //         }
+    //         else if (chunk_header->flags == IN_USE)
+    //         {
+    //             printf(ANSI_COLOR_YELLOW "Chunk Flags: IN_USE\n" ANSI_COLOR_RESET "\n");
+    //         }
+    //         else
+    //         {
+    //             printf(ANSI_COLOR_RED "!!!CHUNK HEADER ERROR!!!\n" ANSI_COLOR_RESET "\n");
+    //         }
+    //         printf("Prev_size(should be same as size): %ld bytes", chunk_header->size - sizeof(Chunk_Header));
 
-            current_header_addr += sizeof(Chunk_Header) + chunk_header->size;
-        }
-    }
+    //         current_header_addr += sizeof(Chunk_Header) + chunk_header->size;
+    //     }
+    // }
 }
 
 int main(void)
 {
     printf("TABLES:\n");
     Arena_List_Node *a_node = malloc(sizeof(a_node));
-    if(!a_node){
+    if (!a_node)
+    {
         perror("malloc error.\n");
         return -1;
     }

@@ -90,7 +90,7 @@ void build_default_chunks_area(Arena_List_Node *node)
     for (chunk_count; chunk_count < rb_node_table[NODE_TABLE_SIZE - 1]; chunk_count++)
     {
         Chunk_Header *chunk_header = (Chunk_Header *)current_header_addr;
-        node->arena.node_pool[chunk_count].addr = current_header_addr;
+        node->arena.node_pool[chunk_count].addr = current_header_addr; //sets pool[i].addr that points to chunk
         chunk_header->size = get_rb_node_size(chunk_count);
         chunk_header->flags = FREE;
         chunk_header->prev_size = chunk_header->size; // future use in coalescing
