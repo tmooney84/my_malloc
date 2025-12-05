@@ -25,9 +25,10 @@ int32_t bucket_index(uint32_t v) {
 }
 
 int main(void){
-    int v = 2047;
+    int v = 33;
     int z = next_pow2(v);
     printf("Bucket is: %d\n", z);
+    printf("2 to the power of n: %d\n", bucket_index(v));
     printf("2 to the power of n: %d\n", bucket_index(z));
     return 0;
 }

@@ -20,6 +20,11 @@ typedef enum {
     BLACK    = 2
 } Color;
 
+typedef enum{
+    ADD_TO_TABLE = 0,
+    DELETE_FROM_TABLE = 1,
+}Chunk_Op;
+
 static const char *ColorNames[] = {
     "NO_COLOR",
     "RED",
@@ -69,8 +74,9 @@ typedef struct Chunk{
 
 typedef struct Arena{
     Arena_Header arena_header;
-    RB_Tree rb_tree;   
     RB_Node node_pool[NODE_POOL_SIZE];
+    //---------------------------
+    //USER SPACE CHUNKS START AFTER
     //void *chunks_start_addr;
 }Arena;
 

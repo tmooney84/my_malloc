@@ -99,17 +99,111 @@ void build_default_chunks_area(Arena_List_Node *node)
     }
 }
 
+
+//==========================START OF RB TREE /LINKED LIST OPERATIONS=====================//
+
+
+//LINKED LIST VERSION!!!// ...Need traversal, add, delete functionality
+//In this version, just need to have the right pointers of each RB_Node
+//connect to the next until the end
+RB_Node *build_free_tree(Arena_List_Node *al_node){
+    RB_Node *itr = &al_node->arena.node_pool[0];
+    for(int i = 0; i < NODE_POOL_SIZE - 1; i++){
+        //set right
+        itr[i].right = &itr[i + 1];
+        //set parent of child
+        itr[i+1].parent = &itr[i];
+    }
+
+    return itr;
+}
+
+void update_table(Arena_List_Node *node, size_t chunk_size, Chunk_Op op){
+    size_t b_idx = bucket_index(chunk_size);
+    
+    if(op == DELETE_FROM_TABLE){
+        node->arena.arena_header.node_table.rb_node_used[b_idx--];
+    }
+    else if(op == ADD_TO_TABLE){
+        node->arena.arena_header.node_table.rb_node_used[b_idx++];
+    }
+
+    return;
+}
+
+//remove node in free_tree + update table + update chunk header(LINKED LIST VERSION)
+
+//add node in free_tree + update table + update chunk header(LINKED LIST VERSION)
+
+//find node in free_tree + update table + update chunk header(LINKED LIST VERSION)
+
 // TODO: need to build out free_tree functionality (ll to start then rb tree)
+
+
 void build_arena(Arena_List_Node *node)
 {
     build_default_arena_header(node);
     build_default_rb_node_pool(node);
     build_default_chunks_area(node);
+
     // build_free_tree() >>> return root// head for linked list
+    node->arena.arena_header.free_tree.root = build_free_tree(node);
+
     // rb_tree >>> after building free tree, set node->arena.rb_tree = rb root node!!!
 
     return;
 }
+
+/*  TODO: traverse tree until found first node that fits, 
+          pull that RB_Node from the tree;
+          use node.addr (which points to chunk header)
+
+
+mark chunk_header
+
+*/
+int32_t get_tree_bucket(RB_Node *root, int32_t b_type_idx){
+
+        //update table
+}
+
+/*TODO: find bucket with best fit...
+    1)look at table starting with the first bucket over the size to allocate
+    ...could use bitwise and then work way up to the table?
+    2)use list/rb tree to find that size
+    3)use that bucket and subtract 1 from that part of the table
+*/
+int32_t add_to_chunk_in_arena(size_t m_size, Arena_List_Node *node)
+{
+    int32_t idx = bucket_index(next_pow2(m_size));
+    bool chunk_op_success = false;
+
+    //check buckets of idx size if none check all buckets until need new arena
+    for(idx; idx < NODE_TABLE_SIZE - 1; idx++){
+    if( node->arena.arena_header.node_table.rb_node_used[idx] >= 0 
+        && node->arena.arena_header.node_table.rb_node_used[idx] < rb_node_table[idx]){
+        RB_Node *rb_node = remove_from_tree(node->arena.arena_header.free_tree.root, idx);
+            //find node of size 
+            //set left, right, parent to null
+            update_table(node, rb_node->size, DELETE_FROM_TABLE);
+        //
+        chunk_op_success = true;
+        return 1;                     //found in arena
+    }
+    }
+
+    //if(chunk_op_success = false){
+    // return 0;                        //not found in arena
+    //}
+
+    // else
+    // {
+    //     perror("Error adding to chunk\n");
+    //     return -1;                   //error        
+    // }
+}
+
+//==========================END OF RB TREE /LINKED LIST OPERATIONS=====================//
 
 Arena_List_Node *create_default_arena_list_node()
 {
@@ -141,50 +235,7 @@ Arena_List_Node *create_custom_arena_list_node(size_t size)
     return node;
 }
 
-/*  TODO: traverse tree until found first node that fits, 
-          pull that RB_Node from the tree;
-          use node.addr (which points to chunk header)
 
-
-mark chunk_header
-
-*/
-int32_t get_tree_bucket(RB_Node *root, int32_t b_type_idx){
-
-        //update table
-}
-
-/*TODO: find bucket with best fit...
-    1)look at table starting with the first bucket over the size to allocate
-    ...could use bitwise and then work way up to the table?
-    2)use list/rb tree to find that size
-    3)use that bucket and subtract 1 from that part of the table
-*/
-int32_t add_to_chunk_in_arena(size_t m_size, Arena_List_Node *node)
-{
-    int32_t idx = bucket_index(next_pow2(m_size));
-    bool chunk_op_success = false;
-
-    //check buckets of idx size if none check all buckets until need new arena
-    for(idx; idx < NODE_TABLE_SIZE - 1; idx++){
-    if( node->arena.arena_header.node_table.rb_node_used[idx] >= 0 
-        && node->arena.arena_header.node_table.rb_node_used[idx] < rb_node_table[idx]){
-        //get_tree_bucket(node->arena.arena_header.free_tree.root, idx)
-        chunk_op_success = true;
-        return 1;                     //found in arena
-    }
-    }
-
-    //if(chunk_op_success = false){
-    // return 0;                        //not found in arena
-    //}
-
-    // else
-    // {
-    //     perror("Error adding to chunk\n");
-    //     return -1;                   //error        
-    // }
-}
 
 void *my_malloc(size_t m_size)
 {
@@ -218,6 +269,7 @@ void *my_malloc(size_t m_size)
     {
         Arena_List_Node *head = create_custom_arena_list_node(m_size);
         arena_list_start = (void *)head;
+
     }
     //************FOR SEARCHING ARENAS IN ARENA LIST, CHECK ARENA_HEADER
     //***************FOR THE large_alloc, if TRUE, SKIP TO THE NEXT ARENA
@@ -350,6 +402,12 @@ void *my_malloc(size_t m_size)
 
     int main(void)
     {
+        //??? should I build the rb_idx_table in my_malloc fn and others individually
+        //or should I run them through main?
+    // builds the 2nd array for caculaculating chunk sizes
+    //build_rb_idx_table();
+
+
 
         return 0;
     }

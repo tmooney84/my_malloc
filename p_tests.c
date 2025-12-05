@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include "arena.h"
+#include "my_malloc.h"
 
 #define NODE_TABLE_SIZE 8
 #define BASE_ARENA_SIZE 65536
