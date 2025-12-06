@@ -12,6 +12,8 @@
         //64kb: 64 40 30  24  16  12  8 194
         //used >>> when total zero if free() then remove arena
 static const uint32_t rb_node_table[NODE_TABLE_SIZE] = {64, 40, 30, 24, 16, 12, 8, 194};
+
+        //idxTB: 0 63 103 133 157 173 185 
 static uint32_t rb_idx_table[NODE_TABLE_SIZE] = {};
 
 typedef enum {

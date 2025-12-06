@@ -15,7 +15,7 @@ int32_t next_pow2(uint32_t v) {
     return v;
 }
 
-int32_t bucket_index(uint32_t v) {
+int32_t chunk_size_index(uint32_t v) {
     int32_t p = next_pow2(v);  // e.g. 457 → 512
     int32_t idx = 31 - __builtin_clz(p) - MIN_TBL_PWR; // -5 because first bucket is 32
     if(idx > MAX_TBL_PWR - MIN_TBL_PWR){
@@ -28,7 +28,7 @@ int main(void){
     int v = 33;
     int z = next_pow2(v);
     printf("Bucket is: %d\n", z);
-    printf("2 to the power of n: %d\n", bucket_index(v));
-    printf("2 to the power of n: %d\n", bucket_index(z));
+    printf("2 to the power of n: %d\n", chunk_size_index(v));
+    printf("2 to the power of n: %d\n", chunk_size_index(z));
     return 0;
 }
