@@ -34,7 +34,7 @@ static const char *ColorNames[] = {
 };
 
 typedef struct RB_Node{
-    void *addr;
+    void *addr;     //associated Chunk_Header Address
     size_t size;
     struct RBNode *left;
     struct RBNode *right;
