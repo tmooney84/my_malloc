@@ -77,7 +77,7 @@ void build_default_rb_node_pool(Arena_List_Node *node)
         pool[i].left = NULL;
         pool[i].right = NULL;
         pool[i].parent = NULL;
-        pool[i].color = RED;
+        pool[i].color = NO_COLOR;
     }
 
     return;
@@ -90,7 +90,8 @@ void build_default_chunks_area(Arena_List_Node *node)
     for (chunk_count; chunk_count < rb_node_table[NODE_TABLE_SIZE - 1]; chunk_count++)
     {
         Chunk_Header *chunk_header = (Chunk_Header *)current_header_addr;
-        node->arena.node_pool[chunk_count].addr = current_header_addr; //sets pool[i].addr that points to chunk
+        node->arena.node_pool[chunk_count].assoc_c_h_addr = chunk_header; //sets pool[i].addr that points to chunk header
+        chunk_header->assoc_rb_node = &node->arena.node_pool[chunk_count];
         chunk_header->size = get_rb_node_size(chunk_count);
         chunk_header->flags = FREE;
         chunk_header->prev_size = chunk_header->size; // future use in coalescing
@@ -132,7 +133,6 @@ void update_table(Arena_List_Node *node, size_t chunk_size, Chunk_Op op){
     return;
 }
 
-
 void update_table_with_idx(Arena_List_Node *node, size_t chunk_size_idx, Chunk_Op op){
     if(op == DELETE_FROM_TABLE){
         node->arena.arena_header.node_table.rb_node_used[chunk_size_idx]--;
@@ -151,18 +151,6 @@ void update_table_with_idx(Arena_List_Node *node, size_t chunk_size_idx, Chunk_O
 //find node in free_tree + update table + update chunk header(LINKED LIST VERSION)
 
 // TODO: need to build out free_tree functionality (ll to start then rb tree)
-
-
-
-
-/*  TODO: traverse tree until found first node that fits, 
-          pull that RB_Node from the tree;
-          use node.addr (which points to chunk header)
-
-
-mark chunk_header
-
-*/
 
 void *alloc_chunk_size(Arena_List_Node *node, size_t chunk_size_idx){
     //traverse linked list... may not be the most efficient for ll, but ok
@@ -241,70 +229,14 @@ void *alloc_arena_chunk(size_t m_size, Arena_List_Node *node)
 
     return my_malloc_ptr;
 }
-    //check the used_table[i] == node_table[i] if so full 
     
-/*
-    int32_t start_idx = rb_idx_table[cs_idx];
-
-
-    //check buckets of idx size if none check all chunks until need new arena
-    for(start_idx; start_idx < rb_idx_table[NODE_TABLE_SIZE - 1]; start_idx++){
-        //int32_t cs_idx = //find the index in rb_idx_table; (...0-6 to look up size)
-        if(used_table[start_idx] >= 0                   //vvv the first index of the next chunk_size 
-            && used_table[start_idx] < rb_node_table[rb_idx_table[cs_idx]]){
-                /*
-                ok so need to find what index the start_idx will be in rb_idx_table
-                which has non_regular jumps... could have a look up table or use
-            
-            uint32_t k = 0;
-            uint32_t next_s_idx = rb_idx_table[cs_idx + 1];
-            while(curr_rb_idx < NODE_TABLE_SIZE - 1 && start_idx < next_s_idx) (...here 7){
-                //if can use chunk,
-                        if so remove from tree
-                        find node of size
-                        set left, right, parent to null
-                        update_table and chunk header
-                        chunk_op_success = true;
-                        return 1;
-                start_idx++;
-            }
-                next_s_idx = 
-                if(next_s_idx == start_idx){
-                    curr_rb_idx++;
-                    rb_idx_table[k + 1]
-                
-                }
-                
-                
-//next_s_idx >>>
-
-            RB_Node *rb_node = remove_from_tree(node->arena.arena_header.free_tree.root, start_idx);
-            //find node of size 
-            //set left, right, parent to null
-            update_table(node, rb_node->size, DELETE_FROM_TABLE);
-            //chunk header
-        //
-        chunk_op_success = true;
-        return 1;                     //found in arena
-    }
-    }
-
-    //if(chunk_op_success = false){
-    // return 0;                        //not found in arena
-    //}
-
-    // else
-    // {
-    //     perror("Error adding to chunk\n");
-    //     return -1;                   //error        
-    // }
-}
-*/
-
-
-
-void *large_alloc(m_size, head){
+void *large_alloc(size_t m_size, Arena_List_Node *node){
     void *my_malloc_ptr = NULL;
+
+    Chunk_Header *chunk_header = (Chunk_Header *)node->arena.arena_header.chunks_start_addr;
+    chunk_header->flags = NA;
+    chunk_header->size = chunk_header->prev_size = m_size + sizeof(Chunk_Header);
+    my_malloc_ptr = chunk_header + sizeof(Chunk_Header);
 
     return my_malloc_ptr;
 }
@@ -345,16 +277,15 @@ Arena_List_Node *create_custom_arena_list_node(size_t size)
     Arena_List_Node *node = NULL;
 
     // needs to have mmap of size + custom info? 1.15 * size or more exact???
-    void *mmap_region = mmap(0, size + sizeof(Arena_List_Node), PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE, -1, 0);
+    void *mmap_region = mmap(0, size + sizeof(Chunk_Header) + sizeof(Arena_List_Node), PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE, -1, 0);
     node = (Arena_List_Node *)mmap_region;
     node->arena.arena_header.base = node;
     node->arena.arena_header.large_alloc = true;
-    node->arena.arena_header.size = size;
+    node->arena.arena_header.size = size + sizeof(Chunk_Header);
     node->arena.arena_header.chunks_start_addr = node + sizeof(Arena_List_Node);
 
     return node;
 }
-
 
 
 void *my_malloc(size_t m_size)
@@ -384,14 +315,12 @@ void *my_malloc(size_t m_size)
         arena_list_start = (void *)head;
         // get initial chunk and update rb_tree + table accordingly
         my_malloc_ptr = alloc_arena_chunk(m_size, head);
-        if(my_malloc_ptr){
-            return my_malloc_ptr;
-        }
-        else{
-            perror("Unable to make small allocation with no existing arena");
-            return 1;
+        if(my_malloc_ptr == NULL){
+            perror("Unable to make small allocation with newly created arena");
+            return NULL;
         }
 
+        return my_malloc_ptr;
     }
 
     //1.2) NO ARENA AND BIG
@@ -400,8 +329,12 @@ void *my_malloc(size_t m_size)
         Arena_List_Node *head = create_custom_arena_list_node(m_size);
         arena_list_start = (void *)head;
 
-        //TODO: allocate directly 
-        //my_malloc_ptr = large_alloc(m_size, head);
+        my_malloc_ptr = large_alloc(m_size, head);
+
+        if(my_malloc_ptr == NULL){
+            perror("Unable to make small allocation with newly created arena");
+            return NULL;
+        }
         return my_malloc_ptr;
     }
     
@@ -434,10 +367,9 @@ void *my_malloc(size_t m_size)
             itr = itr->next;
         }
 
-
         // if not found in arena linked list
         itr->next = create_default_arena_list_node();
-        my_malloc_ptr = add_to_chunk_in_arena(m_size, itr->next);
+        my_malloc_ptr = alloc_arena_chunk(m_size, itr->next);
         return my_malloc_ptr;
     }
 
@@ -446,8 +378,7 @@ void *my_malloc(size_t m_size)
     {
         Arena_List_Node *itr = (Arena_List_Node *)arena_list_start;
         Arena_List_Node *node = create_custom_arena_list_node(m_size);
-        //TODO: allocate directly 
-        //my_malloc_ptr = large_alloc(m_size, head);
+        my_malloc_ptr = large_alloc(m_size, node);
 
         for (; itr != NULL; itr = itr->next)
             ;
@@ -526,12 +457,12 @@ void *my_malloc(size_t m_size)
 
     int main(void)
     {
-        //??? should I build the rb_idx_table in my_malloc fn and others individually
-        //or should I run them through main?
-    // builds the 2nd array for caculaculating chunk sizes
-    //build_rb_idx_table();
+        char *test = my_malloc(20 * sizeof(char));
+        if(!test){
+            printf("Error allocating memory.\n");
+        }
 
-
-
+        printf("test string: %s", test);
+        printf("test string pointer address: %p", test);
         return 0;
     }

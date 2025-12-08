@@ -34,7 +34,7 @@ static const char *ColorNames[] = {
 };
 
 typedef struct RB_Node{
-    void *addr;     //associated Chunk_Header Address
+    Chunk_Header *assoc_c_h_addr;     //associated Chunk_Header Address
     size_t size;
     struct RBNode *left;
     struct RBNode *right;
@@ -63,8 +63,9 @@ typedef struct Arena_Header{
 }Arena_Header;
 
 typedef struct Chunk_Header{
+    RB_Node *assoc_rb_node;
     size_t size; //full chunk size including header
-    enum{FREE, IN_USE} flags; // FREE or IN_USE
+    enum{FREE, IN_USE, NA} flags; // FREE or IN_USE
     size_t prev_size;
 }Chunk_Header;
 
@@ -77,9 +78,6 @@ typedef struct Chunk{
 typedef struct Arena{
     Arena_Header arena_header;
     RB_Node node_pool[NODE_POOL_SIZE];
-    //---------------------------
-    //USER SPACE CHUNKS START AFTER
-    //void *chunks_start_addr;
 }Arena;
 
 typedef struct Arena_List_Node{
@@ -87,6 +85,12 @@ typedef struct Arena_List_Node{
     struct Arena_List_Node *next;
     struct Arena_List_Node *prev;
     Arena arena;
+    //END of Arena_List_Node
+    //---------------------------
+    //USER SPACE CHUNKS START AFTER
+    //void *chunks_start_addr;
+    //Chunks_Header
+    //***USER MALLOC ***//
 }Arena_List_Node;
 
 //header_size = sizeof(Chunk_Header);
