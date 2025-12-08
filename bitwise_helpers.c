@@ -24,11 +24,11 @@ int32_t chunk_size_index(uint32_t v) {
     return idx;
 }
 
-int main(void){
-    int v = 33;
-    int z = next_pow2(v);
-    printf("Bucket is: %d\n", z);
-    printf("2 to the power of n: %d\n", chunk_size_index(v));
-    printf("2 to the power of n: %d\n", chunk_size_index(z));
-    return 0;
-}
+// int main(void){
+//     int v = 33;
+//     int z = next_pow2(v);
+//     printf("Bucket is: %d\n", z);
+//     printf("2 to the power of n: %d\n", chunk_size_index(v));
+//     printf("2 to the power of n: %d\n", chunk_size_index(z));
+//     return 0;
+// }

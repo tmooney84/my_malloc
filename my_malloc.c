@@ -5,7 +5,7 @@
 #include <string.h>
 
 #include "arena.h"
-#include "bitwise_helpers.c"
+#include "bitwise_helpers.h"
 
 // REMEMBER TO ADD 16-BIT ALIGNMENT!!!
 
@@ -34,9 +34,9 @@ int build_rb_idx_table()
     return 0;
 }
 
-size_t get_rb_node_size(int idx)
+size_t get_rb_node_size(uint32_t idx)
 {
-    for (int i = 0; i < NODE_TABLE_SIZE - 2; i++)
+    for (uint32_t i = 0; i < NODE_TABLE_SIZE - 2; i++)
     {
         if (idx >= rb_idx_table[i] && idx < rb_idx_table[i + 1] && i < NODE_TABLE_SIZE - 3)
         {
@@ -70,7 +70,7 @@ void build_default_rb_node_pool(Arena_List_Node *node)
 {
     RB_Node *pool = node->arena.node_pool;
 
-    for (int i = 0; i < rb_node_table[NODE_TABLE_SIZE - 1]; i++)
+    for (uint32_t i = 0; i < rb_node_table[NODE_TABLE_SIZE - 1]; i++)
     {
         //pool[i].addr >>> set in build_default_chunks_area() function
         pool[i].size = get_rb_node_size(i);
@@ -87,7 +87,8 @@ void build_default_chunks_area(Arena_List_Node *node)
 {
     void *current_header_addr = node->arena.arena_header.chunks_start_addr;
     size_t chunk_count = 0;
-    for (chunk_count; chunk_count < rb_node_table[NODE_TABLE_SIZE - 1]; chunk_count++)
+
+    for(; chunk_count < rb_node_table[NODE_TABLE_SIZE - 1]; chunk_count++)
     {
         Chunk_Header *chunk_header = (Chunk_Header *)current_header_addr;
         node->arena.node_pool[chunk_count].assoc_c_h_addr = chunk_header; //sets pool[i].addr that points to chunk header
@@ -98,6 +99,8 @@ void build_default_chunks_area(Arena_List_Node *node)
 
         current_header_addr += sizeof(Chunk_Header) + chunk_header->size;
     }
+
+    return;
 }
 
 
@@ -124,10 +127,10 @@ void update_table(Arena_List_Node *node, size_t chunk_size, Chunk_Op op){
     size_t cs_idx = chunk_size_index(chunk_size);
     
     if(op == DELETE_FROM_TABLE){
-        node->arena.arena_header.node_table.rb_node_used[cs_idx--];
+        node->arena.arena_header.node_table.rb_node_used[cs_idx]--;
     }
     else if(op == ADD_TO_TABLE){
-        node->arena.arena_header.node_table.rb_node_used[cs_idx++];
+        node->arena.arena_header.node_table.rb_node_used[cs_idx]++;
     }
 
     return;
@@ -163,7 +166,7 @@ void *alloc_chunk_size(Arena_List_Node *node, size_t chunk_size_idx){
 
     while(itr != NULL){
        if(itr->size >= chunk_size){
-            Chunk_Header *ch = itr->addr;
+            Chunk_Header *ch = itr->assoc_c_h_addr;
            
             //if chunk found... set RB_Node addr, update table
             if(ch->flags == FREE){
@@ -175,6 +178,7 @@ void *alloc_chunk_size(Arena_List_Node *node, size_t chunk_size_idx){
                 //remove node from ll
                 RB_Node *prev = itr->parent;
 
+                //RB_TREE >>> allocating first node... need to reset head
                 //if first, reset free_tree.root
                 if(prev == NULL){
                     node->arena.arena_header.free_tree.root = itr->right;
@@ -188,12 +192,12 @@ void *alloc_chunk_size(Arena_List_Node *node, size_t chunk_size_idx){
                 itr->right = NULL;
                 itr->parent = NULL;
                 //change color in RB Version
-
-                //RB_TREE >>> allocating first node... need to reset head
-                int32_t idx = chunk_size_index(ch->size);
+                
+                //check chunk size index for table update
+                int32_t used_chunk_size_idx = chunk_size_index(ch->size);
 
                 //TABLE UPDATE
-                update_table_with_idx(node, chunk_size_idx, ADD_TO_TABLE);
+                update_table_with_idx(node, used_chunk_size_idx, ADD_TO_TABLE);
 
                 break;
             }
@@ -207,15 +211,13 @@ void *alloc_chunk_size(Arena_List_Node *node, size_t chunk_size_idx){
 void *alloc_arena_chunk(size_t m_size, Arena_List_Node *node)
 {
     void *my_malloc_ptr = NULL;
-    bool chunk_op_success = false;
     
     //find chunk size and starting_size_index
     int32_t cs_idx = chunk_size_index(m_size); //rb_node_table[cs_idx] = chunk size
-    uint32_t used_table[] = node->arena.arena_header.node_table.rb_node_used;
+    uint32_t *used_table = &node->arena.arena_header.node_table.rb_node_used[0];
    
     //find open chunk size
-    size_t i = 0;
-    while(i < NODE_POOL_SIZE - 1){
+    for(size_t i = cs_idx; i < NODE_POOL_SIZE - 1; i++){
         //chunk_size not full 
         if(used_table[i] != rb_node_table[i])
         {
@@ -223,8 +225,7 @@ void *alloc_arena_chunk(size_t m_size, Arena_List_Node *node)
             alloc_chunk_size(node, i);
             return my_malloc_ptr;
         }
-        //if chunk_size full
-        i++;
+        //if chunk_size full check next node size group
     }
 
     return my_malloc_ptr;
@@ -245,7 +246,7 @@ void *large_alloc(size_t m_size, Arena_List_Node *node){
 //==========================END OF RB TREE /LINKED LIST OPERATIONS=====================//
 void build_arena(Arena_List_Node *node)
 {
-    build_default_arena_header(node);
+    set_default_arena_header(node);
     build_default_rb_node_pool(node);
     build_default_chunks_area(node);
 
@@ -389,9 +390,10 @@ void *my_malloc(size_t m_size)
     return my_malloc_ptr;
 }
 
+
     // my_free
-    void free(void *ptr)
-    {
+//    void free(void *ptr)
+ //   {
         /*
         The free() function frees the memory space pointed to by ptr, which must have been returned by a
         previous call to malloc(), calloc() or realloc(). Otherwise, or if free(ptr) has already been called
@@ -405,11 +407,11 @@ void *my_malloc(size_t m_size)
                     ELSE IF current allocs < 0
                         RETURN ERROR
         */
-    }
+//    }
 
     // my_calloc
-    void *my_calloc(size_t nmemb, size_t size)
-    {
+ //   void *my_calloc(size_t nmemb, size_t size)
+  //  {
         /*
         //calloc(# of elements, sizeof(data))
         1) MY_MALLOC and return the pointer
@@ -419,15 +421,15 @@ void *my_malloc(size_t m_size)
         */
         // basically malloc and then zero out the memory... it may be worth carrying a flag
         // so that the my_malloc knows to zero out the memory
-    }
+ //   }
     // The calloc() function allocates memory for an array of nmemb elements of size
     // bytes each and returns a pointer to the allocated memory. The memory is set to zero.
     // If nmemb or size is 0, then calloc() returns either NULL,
     // or a unique pointer value that can later be successfully passed to free().
 
     // my_realloc
-    void *my_realloc(void *ptr, size_t size)
-    {
+//    void *my_realloc(void *ptr, size_t size)
+//    {
         /*
         IF ptr == NULL:
             RETURN regular MY_MALLOC(size)
@@ -444,7 +446,7 @@ void *my_malloc(size_t m_size)
             return NULL && set errno
 
         */
-    }
+//    }
     /*
     The realloc() function changes the size of the memory block pointed to by ptr to size bytes.
     The contents will be unchanged in the range from the start of the region up to the minimum of
@@ -454,7 +456,6 @@ void *my_malloc(size_t m_size)
     Unless ptr is NULL, it must have been returned by an earlier call to malloc(), calloc() or realloc().
     If the area pointed to was moved, a free(ptr) is done.
     */
-
     int main(void)
     {
         char *test = my_malloc(20 * sizeof(char));

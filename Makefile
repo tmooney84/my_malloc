@@ -25,6 +25,6 @@ clean:
 
 fclean: clean
 	rm -f $(TARGET)
-	rm -rf tests/actual tests/expected runner backup.txt
+#	rm -rf tests/actual tests/expected runner backup.txt
 
 re: fclean all

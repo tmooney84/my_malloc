@@ -1,3 +1,6 @@
+#ifndef ARENA_H 
+#define ARENA_H 
+
 #include <stdint.h>
 #include <stdio.h>
 #include <stdbool.h>
@@ -14,7 +17,7 @@
 static const uint32_t rb_node_table[NODE_TABLE_SIZE] = {64, 40, 30, 24, 16, 12, 8, 194};
 
         //idxTB: 0 63 103 133 157 173 185 
-static uint32_t rb_idx_table[NODE_TABLE_SIZE] = {};
+static uint32_t rb_idx_table[NODE_TABLE_SIZE] = {}; //??? IS THIS NEEDED???
 
 typedef enum {
     NO_COLOR = 0,
@@ -27,18 +30,25 @@ typedef enum{
     DELETE_FROM_TABLE = 1,
 }Chunk_Op;
 
-static const char *ColorNames[] = {
-    "NO_COLOR",
-    "RED",
-    "BLACK",
-};
+// static const char *ColorNames[] = {
+//     "NO_COLOR",
+//     "RED",
+//     "BLACK",
+// };
+
+typedef struct Chunk_Header{
+    void *assoc_rb_node;
+    size_t size; //full chunk size including header
+    enum{FREE, IN_USE, NA} flags; // FREE or IN_USE
+    size_t prev_size;
+}Chunk_Header;
 
 typedef struct RB_Node{
     Chunk_Header *assoc_c_h_addr;     //associated Chunk_Header Address
     size_t size;
-    struct RBNode *left;
-    struct RBNode *right;
-    struct RBNode *parent;
+    struct RB_Node *left;
+    struct RB_Node *right;
+    struct RB_Node *parent;
     Color color;
 }RB_Node;
 
@@ -62,18 +72,11 @@ typedef struct Arena_Header{
     //size_t used_bytes
 }Arena_Header;
 
-typedef struct Chunk_Header{
-    RB_Node *assoc_rb_node;
-    size_t size; //full chunk size including header
-    enum{FREE, IN_USE, NA} flags; // FREE or IN_USE
-    size_t prev_size;
-}Chunk_Header;
-
-//!!! is this necessary?
-typedef struct Chunk{
-    Chunk_Header chunk_header;
-    //data stored after header;
-}Chunk;
+// //!!! is this necessary?
+// typedef struct Chunk{
+//     Chunk_Header chunk_header;
+//     //data stored after header;
+// }Chunk;
 
 typedef struct Arena{
     Arena_Header arena_header;
@@ -92,6 +95,9 @@ typedef struct Arena_List_Node{
     //Chunks_Header
     //***USER MALLOC ***//
 }Arena_List_Node;
+
+
+#endif
 
 //header_size = sizeof(Chunk_Header);
 //Next Chunk stored &chunk[0] + header_size + chunk.chunk_header.size;
