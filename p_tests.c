@@ -27,6 +27,8 @@
 #define ANSI_COLOR_CYAN "\x1b[36m"
 #define ANSI_COLOR_RESET "\x1b[0m"
 
+static void *arena_list_start = NULL;
+
 void print_tables(Arena_List_Node *node)
 {
     printf("rb_node_table: ");
@@ -55,6 +57,7 @@ void print_tables(Arena_List_Node *node)
 
 void print_arena_node_info(Arena_List_Node *node)
 {
+    printf("Arena_List_Node *node addr: %p\n", node); 
     printf("node->next: %p\n", node->next);
     printf("node->prev: %p\n", node->prev);
     printf("node->arena: %p\n", (void *)&node->arena);
@@ -72,7 +75,7 @@ void print_arena_node_info(Arena_List_Node *node)
     }
     printf("\n");
     printf("------------------RB TREE----------------------\n");
-    printf("node->arena.rb_tree.root: %p\n", node->arena.rb_tree.root);
+    printf("node->arena.arena_header.free_tree.root: %p\n", node->arena.arena_header.free_tree.root);
     printf("...PUT TREE PRINT FUNCTION HERE...\n");
     printf("------------------RB POOL----------------------\n");
     printf("------------------RB POOL----------------------\n");
@@ -80,7 +83,7 @@ void print_arena_node_info(Arena_List_Node *node)
     for (int i = 0; i < NODE_POOL_SIZE; i++)
     {
         printf("------------------RB NODE[%d]----------------------\n", i);
-        printf("RB_NODE[%d] addr (points to chunk header): %p\n", i, node->arena.node_pool[i].addr);
+        printf("RB_NODE[%d] assoc_c_h_addr (points to chunk header): %p\n", i, node->arena.node_pool[i].assoc_c_h_addr);
         printf("RB_NODE[%d] size: %ld\n", i, node->arena.node_pool[i].size);
         printf("RB_NODE[%d] left: %p\n", i, node->arena.node_pool[i].left);
         printf("RB_NODE[%d] right: %p\n", i, node->arena.node_pool[i].right);
@@ -135,6 +138,18 @@ void print_arena_node_info(Arena_List_Node *node)
 
 int main(void)
 {
+    // char *test = my_malloc(20 * sizeof(char));
+    // if (!test)
+    // {
+    //     printf("Error allocating memory.\n");
+    // }
+
+    // printf("test string: %s", test);
+    // printf("test string pointer address: %p", test);
+build_rb_idx_table();
+
+
+arena_list_start = NULL;
     printf("TABLES:\n");
     Arena_List_Node *a_node = malloc(sizeof(a_node));
     if (!a_node)
@@ -142,6 +157,7 @@ int main(void)
         perror("malloc error.\n");
         return -1;
     }
+
 
     print_tables(a_node);
     printf("---------------------------------------------------");

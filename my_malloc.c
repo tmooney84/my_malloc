@@ -17,15 +17,19 @@
 
     !!! On error, these functions return NULL and set errno. (malloc, realloc, calloc)
 */
+
 static void *arena_list_start = NULL;
+
+uint32_t rb_idx_table[NODE_TABLE_SIZE] = {0};
 
 int build_rb_idx_table()
 {
     int idx = -1;
-    for (int i = 0; i < NODE_TABLE_SIZE - 1; i++)
+    rb_idx_table[0] = 0;
+    for (int i = 0; i < NODE_TABLE_SIZE - 2; i++)
     {
         idx += rb_node_table[i];
-        rb_idx_table[i] = idx;
+        rb_idx_table[i + 1] = idx;
     }
 
     // should give 193 as the last index
@@ -289,7 +293,8 @@ Arena_List_Node *create_custom_arena_list_node(size_t size)
 }
 
 
-void *my_malloc(size_t m_size)
+//!!!!void *my_malloc(size_t m_size)
+Arena_List_Node *my_malloc(size_t m_size)
 {
     void *my_malloc_ptr = NULL;
     
@@ -321,7 +326,8 @@ void *my_malloc(size_t m_size)
             return NULL;
         }
 
-        return my_malloc_ptr;
+        //!!!!!return my_malloc_ptr;
+        return head;
     }
 
     //1.2) NO ARENA AND BIG
@@ -336,7 +342,8 @@ void *my_malloc(size_t m_size)
             perror("Unable to make small allocation with newly created arena");
             return NULL;
         }
-        return my_malloc_ptr;
+        // !!!!return my_malloc_ptr;
+        return head;
     }
     
     //2) ARENA LIST EXISTS
@@ -371,7 +378,9 @@ void *my_malloc(size_t m_size)
         // if not found in arena linked list
         itr->next = create_default_arena_list_node();
         my_malloc_ptr = alloc_arena_chunk(m_size, itr->next);
-        return my_malloc_ptr;
+
+        //!!!return my_malloc_ptr;
+        return itr->next;
     }
 
     //2.2 ARENA LIST EXISTS and LARGE 
@@ -384,10 +393,13 @@ void *my_malloc(size_t m_size)
         for (; itr != NULL; itr = itr->next)
             ;
         itr->next = node;
-        return my_malloc_ptr;
+        ///!!!return my_malloc_ptr;
+        return node;
     }
 
-    return my_malloc_ptr;
+    ///!!!return my_malloc_ptr;
+
+    return NULL; //!!!!
 }
 
 
@@ -456,14 +468,15 @@ void *my_malloc(size_t m_size)
     Unless ptr is NULL, it must have been returned by an earlier call to malloc(), calloc() or realloc().
     If the area pointed to was moved, a free(ptr) is done.
     */
-    int main(void)
-    {
-        char *test = my_malloc(20 * sizeof(char));
-        if(!test){
-            printf("Error allocating memory.\n");
-        }
 
-        printf("test string: %s", test);
-        printf("test string pointer address: %p", test);
-        return 0;
-    }
+    // int main(void)
+    // {
+    //     char *test = my_malloc(20 * sizeof(char));
+    //     if(!test){
+    //         printf("Error allocating memory.\n");
+    //     }
+
+    //     printf("test string: %s", test);
+    //     printf("test string pointer address: %p", test);
+    //     return 0;
+    // }

@@ -10,6 +10,7 @@
 #define MAX_SIZE 3072 
 #define NODE_POOL_SIZE 194   
 
+
 //NEEDS TO BE MANUALLY UPDATED TO LAST ELEMENT IN rb_node_table
         //value 32 64 128 256 512 1k 2k total
         //64kb: 64 40 30  24  16  12  8 194
@@ -17,7 +18,8 @@
 static const uint32_t rb_node_table[NODE_TABLE_SIZE] = {64, 40, 30, 24, 16, 12, 8, 194};
 
         //idxTB: 0 63 103 133 157 173 185 
-static uint32_t rb_idx_table[NODE_TABLE_SIZE] = {}; //??? IS THIS NEEDED???
+
+extern uint32_t rb_idx_table[NODE_TABLE_SIZE];
 
 typedef enum {
     NO_COLOR = 0,
