@@ -8,6 +8,8 @@
 #define NODE_TABLE_SIZE 8
 #define BASE_ARENA_SIZE 65536
 #define MAX_SIZE 3072
+#define NODE_POOL_SIZE 194   
+
 
 #define ANSI_COLOR_RED "\x1b[31m"
 #define ANSI_COLOR_GREEN "\x1b[32m"
@@ -146,22 +148,22 @@ int main(void)
 
     // printf("test string: %s", test);
     // printf("test string pointer address: %p", test);
-build_rb_idx_table();
 
+    arena_list_start = NULL;
+    build_rb_idx_table();
 
-arena_list_start = NULL;
     printf("TABLES:\n");
-    Arena_List_Node *a_node = malloc(sizeof(a_node));
-    if (!a_node)
+    Arena_List_Node *test = my_malloc(127 * sizeof(char));
+    if (!test)
     {
-        perror("malloc error.\n");
-        return -1;
+        printf("Error allocating memory.\n");
     }
 
+    printf("test Arena_List_Node starts at: %p", test);
 
-    print_tables(a_node);
+    print_tables(test);
     printf("---------------------------------------------------");
     printf("ARENA NODE INFO:\n");
-    print_arena_node_info(a_node);
+    print_arena_node_info(test);
     return 0;
 }

@@ -40,19 +40,12 @@ int build_rb_idx_table()
 
 size_t get_rb_node_size(uint32_t idx)
 {
-    for (uint32_t i = 0; i < NODE_TABLE_SIZE - 2; i++)
+    for (uint32_t i = 0; i < NODE_TABLE_SIZE - 1; i++)
     {
-        if (idx >= rb_idx_table[i] && idx < rb_idx_table[i + 1] && i < NODE_TABLE_SIZE - 3)
+        if (idx >= rb_idx_table[i] && idx <= rb_idx_table[i + 1] && i < NODE_TABLE_SIZE - 1)
         {
-            return rb_node_table[i];
+            return rb_node_size[i];
         }
-        else if (idx >= rb_idx_table[i] && idx <= rb_idx_table[i + 1] && i == NODE_TABLE_SIZE - 2)
-        {
-            return rb_node_table[i];
-        }
-        else
-            perror("Error getting rb_node_size\n");
-        return -1;
     }
     perror("Error getting rb_node_size\n");
     return -1;
@@ -60,7 +53,7 @@ size_t get_rb_node_size(uint32_t idx)
 
 void set_default_arena_header(Arena_List_Node *node)
 {
-    node->arena.arena_header.base = node;
+    node->arena.arena_header.base = &node->arena;
     node->arena.arena_header.large_alloc = false;
     node->arena.arena_header.size = BASE_ARENA_SIZE;
     node->arena.arena_header.free_tree.root = NULL;
@@ -284,7 +277,7 @@ Arena_List_Node *create_custom_arena_list_node(size_t size)
     // needs to have mmap of size + custom info? 1.15 * size or more exact???
     void *mmap_region = mmap(0, size + sizeof(Chunk_Header) + sizeof(Arena_List_Node), PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE, -1, 0);
     node = (Arena_List_Node *)mmap_region;
-    node->arena.arena_header.base = node;
+    node->arena.arena_header.base = &node->arena;
     node->arena.arena_header.large_alloc = true;
     node->arena.arena_header.size = size + sizeof(Chunk_Header);
     node->arena.arena_header.chunks_start_addr = node + sizeof(Arena_List_Node);
