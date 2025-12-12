@@ -29,8 +29,6 @@
 #define ANSI_COLOR_CYAN "\x1b[36m"
 #define ANSI_COLOR_RESET "\x1b[0m"
 
-static void *arena_list_start = NULL;
-
 void print_tables(Arena_List_Node *node)
 {
     printf("rb_node_table: ");
@@ -109,61 +107,82 @@ void print_arena_node_info(Arena_List_Node *node)
         }
     }
     printf(ANSI_COLOR_MAGENTA "------------------CHUNKS USER ARENA----------------------\n" ANSI_COLOR_RESET "\n");
-    // printf("chunks_start_addr: %p\n", node->arena.arena_header.chunks_start_addr);
-    // for (int i = 0; i < NODE_POOL_SIZE; i++)
-    // {
-    //     printf("-----------------CHUNK[i]----------------\n");
-    //     void *current_header_addr = node->arena.arena_header.chunks_start_addr;
-    //     for (int i = 0; i < rb_node_table[NODE_TABLE_SIZE - 1]; i++)
-    //     {
-    //         Chunk_Header *chunk_header = (Chunk_Header *)current_header_addr;
-    //         printf("Chunk_Header Address: %p\n", current_header_addr);
-    //         printf("Chunk Size (not including chunk header): %ld bytes", (chunk_header->size - sizeof(Chunk_Header)));
-    //         if (chunk_header->flags == FREE)
-    //         {
-    //             printf(ANSI_COLOR_CYAN "Chunk Flags: FREE\n" ANSI_COLOR_RESET "\n");
-    //         }
-    //         else if (chunk_header->flags == IN_USE)
-    //         {
-    //             printf(ANSI_COLOR_YELLOW "Chunk Flags: IN_USE\n" ANSI_COLOR_RESET "\n");
-    //         }
-    //         else
-    //         {
-    //             printf(ANSI_COLOR_RED "!!!CHUNK HEADER ERROR!!!\n" ANSI_COLOR_RESET "\n");
-    //         }
-    //         printf("Prev_size(should be same as size): %ld bytes", chunk_header->size - sizeof(Chunk_Header));
+    printf("chunks_start_addr: %p\n", node->chunks_start_addr);
+        printf("-----------------CHUNK[i]----------------\n");
+        void *current_header_addr = node->chunks_start_addr;
+        for (uint32_t i = 0; i < rb_node_table[NODE_TABLE_SIZE - 1]; i++)
+        {
+            Chunk_Header *chunk_header = (Chunk_Header *)current_header_addr;
+            printf("Chunk_Header Address: %p\n", current_header_addr);
+            printf("Chunk Size (not including chunk header): %ld bytes\n", chunk_header->size);
+            if (chunk_header->flags == FREE)
+            {
+                printf(ANSI_COLOR_CYAN "Chunk Flags: FREE\n" ANSI_COLOR_RESET "\n");
+            }
+            else if (chunk_header->flags == IN_USE)
+            {
+                printf(ANSI_COLOR_YELLOW "Chunk Flags: IN_USE\n" ANSI_COLOR_RESET "\n");
+            }
+            else
+            {
+                printf(ANSI_COLOR_RED "!!!CHUNK HEADER ERROR!!!\n" ANSI_COLOR_RESET "\n");
+            }
+            printf("Prev_size(should be same as size): %ld bytes\n", chunk_header->size);
 
-    //         current_header_addr += sizeof(Chunk_Header) + chunk_header->size;
-    //     }
-    // }
+            current_header_addr += sizeof(Chunk_Header) + chunk_header->size;
+        }
 }
 
-int main(void)
-{
-    // char *test = my_malloc(20 * sizeof(char));
-    // if (!test)
-    // {
-    //     printf("Error allocating memory.\n");
-    // }
+// int main(void)
+// {
+//     // char *test = my_malloc(20 * sizeof(char));
+//     // if (!test)
+//     // {
+//     //     printf("Error allocating memory.\n");
+//     // }
 
-    // printf("test string: %s", test);
-    // printf("test string pointer address: %p", test);
+//     // printf("test string: %s", test);
+//     // printf("test string pointer address: %p", test);
 
-    arena_list_start = NULL;
-    build_rb_idx_table();
+//     build_rb_idx_table();
 
-    printf("TABLES:\n");
-    Arena_List_Node *test = my_malloc(127 * sizeof(char));
-    if (!test)
+//     printf("TABLES:\n");
+//     Arena_List_Node *test = my_malloc(62 * sizeof(char));
+//     if (!test)
+//     {
+//         printf("Error allocating memory.\n");
+//     }
+
+//     printf("test Arena_List_Node starts at: %p\n", test);
+
+//     print_tables(test);
+//     printf("---------------------------------------------------");
+//     printf("ARENA NODE INFO:\n");
+//     print_arena_node_info(test);
+//     return 0;
+// }
+
+int main(void){
+    char *test1 = my_malloc(62 * sizeof(char));
+    if (!test1)
     {
         printf("Error allocating memory.\n");
     }
 
-    printf("test Arena_List_Node starts at: %p", test);
+    strcpy(test1, "Hello World!\n");
+    printf("test string: %s", test1);
+    printf("test string pointer address: %p\n", test1);
 
-    print_tables(test);
-    printf("---------------------------------------------------");
-    printf("ARENA NODE INFO:\n");
-    print_arena_node_info(test);
+
+    char *test2 = my_malloc(63 * sizeof(char));
+    if (!test2)
+    {
+        printf("Error allocating memory.\n");
+    }
+
+    strcpy(test2, "This is Not a Drill!!!\n");
+    printf("test string: %s", test2);
+    printf("test string pointer address: %p\n", test2);
+    
     return 0;
 }

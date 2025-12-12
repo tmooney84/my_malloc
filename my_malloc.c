@@ -162,9 +162,16 @@ char *alloc_chunk_size(Arena_List_Node *node, size_t chunk_size_idx){
     
     RB_Node *root = node->arena.arena_header.free_tree.root;
     RB_Node *itr = root;
-    size_t chunk_size = rb_node_table[chunk_size_idx];
+    size_t chunk_size = rb_node_size[chunk_size_idx];
+    size_t num_possible_chunks = 0;
+    
+    for(size_t i = chunk_size_idx; i < NODE_TABLE_SIZE-1; i++){
+        num_possible_chunks += rb_node_table[i];
+    }
 
-    while(itr != NULL){
+    size_t counter = 0;
+
+    while(itr != NULL && counter < num_possible_chunks){
        if(itr->size >= chunk_size){
             Chunk_Header *ch = itr->assoc_c_h_addr;
            
@@ -203,6 +210,7 @@ char *alloc_chunk_size(Arena_List_Node *node, size_t chunk_size_idx){
             }
         } 
         itr = itr->right;
+        counter++;
    }
    
    return my_malloc_ptr;
@@ -222,7 +230,7 @@ char *alloc_arena_chunk(size_t m_size, Arena_List_Node *node)
         if(used_table[i] != rb_node_table[i])
         {
             //for RB Tree... find free node of that size
-            alloc_chunk_size(node, i);
+            my_malloc_ptr = alloc_chunk_size(node, i);
             return my_malloc_ptr;
         }
         //if chunk_size full check next node size group
@@ -291,8 +299,8 @@ Arena_List_Node *create_custom_arena_list_node(size_t size)
 }
 
 
-//!!!!void *my_malloc(size_t m_size)
-Arena_List_Node *my_malloc(size_t m_size)
+void *my_malloc(size_t m_size)
+//!!!Arena_List_Node *my_malloc(size_t m_size)
 {
     void *my_malloc_ptr = NULL;
     
@@ -324,8 +332,11 @@ Arena_List_Node *my_malloc(size_t m_size)
             return NULL;
         }
 
-        //!!!!!return my_malloc_ptr;
-        return head;
+       // TESTING:
+       // printf("arena_list_start = %p\n", arena_list_start);    //!!!!!!!!!!!!!!!!
+        
+       return my_malloc_ptr;
+        //!!!return head;
     }
 
     //1.2) NO ARENA AND BIG
@@ -340,8 +351,8 @@ Arena_List_Node *my_malloc(size_t m_size)
             perror("Unable to make small allocation with newly created arena");
             return NULL;
         }
-        // !!!!return my_malloc_ptr;
-        return head;
+        return my_malloc_ptr;
+        //!!!return head;
     }
     
     //2) ARENA LIST EXISTS
@@ -377,8 +388,8 @@ Arena_List_Node *my_malloc(size_t m_size)
         itr->next = create_default_arena_list_node();
         my_malloc_ptr = alloc_arena_chunk(m_size, itr->next);
 
-        //!!!return my_malloc_ptr;
-        return itr->next;
+        return my_malloc_ptr;
+        //!!!return itr->next;
     }
 
     //2.2 ARENA LIST EXISTS and LARGE 
@@ -391,8 +402,8 @@ Arena_List_Node *my_malloc(size_t m_size)
         for (; itr != NULL; itr = itr->next)
             ;
         itr->next = node;
-        ///!!!return my_malloc_ptr;
-        return node;
+        return my_malloc_ptr;
+        //!!!return node;
     }
 
     ///!!!return my_malloc_ptr;
