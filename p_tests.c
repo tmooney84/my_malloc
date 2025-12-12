@@ -69,7 +69,7 @@ void print_arena_node_info(Arena_List_Node *node)
     printf("node->arena.arena_header.size: %ld bytes\n", node->arena.arena_header.size);
     printf("node->arena.arena_header.free_tree.root: %p\n", node->arena.arena_header.free_tree.root);
     printf("node->arena.arena_header.rb_node_pool: %p\n", node->arena.arena_header.rb_node_pool);
-    printf("node->arena.arena_header.chunks_start_addr: %p\n", node->arena.arena_header.chunks_start_addr);
+    printf("node->chunks_start_addr: %p\n", node->chunks_start_addr);
     printf("node->arena.arena_header.node_table.rb_node_used: ");
     for (int i = 0; i < NODE_TABLE_SIZE; i++)
     {

@@ -69,7 +69,7 @@ typedef struct Arena_Header{
     size_t size;
     RB_Tree free_tree;
     RB_Node *rb_node_pool;
-    void *chunks_start_addr;
+    //void *chunks_start_addr;
     Node_Table node_table;
     //pthread_mutex_t lock; if wanted multithread-safe
     //size_t used_bytes
@@ -91,6 +91,7 @@ typedef struct Arena_List_Node{
     struct Arena_List_Node *next;
     struct Arena_List_Node *prev;
     Arena arena;
+    char *chunks_start_addr;
     //END of Arena_List_Node
     //---------------------------
     //USER SPACE CHUNKS START AFTER
