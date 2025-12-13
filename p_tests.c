@@ -153,33 +153,8 @@ int main(void)
         printf("Error allocating memory.\n");
     }
 
-    my_malloc(62 * sizeof(char));
-    my_malloc(62 * sizeof(char));
-    my_malloc(62 * sizeof(char));
-    my_malloc(62 * sizeof(char));
-    my_malloc(62 * sizeof(char));
-    my_malloc(62 * sizeof(char));
-    my_malloc(62 * sizeof(char));
+        my_malloc(999 * sizeof(char));
     
-    my_malloc(31 * sizeof(char));
-    my_malloc(31 * sizeof(char));
-    my_malloc(31 * sizeof(char));
-    my_malloc(31 * sizeof(char));
-    my_malloc(31 * sizeof(char));
-    my_malloc(31 * sizeof(char));
-    my_malloc(31 * sizeof(char));
-    my_malloc(31 * sizeof(char));
-    my_malloc(31 * sizeof(char));
-    my_malloc(31 * sizeof(char));
-    my_malloc(31 * sizeof(char));
-    my_malloc(31 * sizeof(char));
-    //my_malloc(31 * sizeof(char));
-    //my_malloc(31 * sizeof(char));
-    //my_malloc(31 * sizeof(char));
-    // my_malloc(31 * sizeof(char));
-    // my_malloc(31 * sizeof(char));
-
-    // my_malloc(62 * sizeof(char));
 
     printf("test Arena_List_Node starts at: %p\n", test);
 

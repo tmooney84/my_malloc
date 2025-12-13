@@ -154,8 +154,6 @@ void update_table_with_idx(Arena_List_Node *node, size_t chunk_size_idx, Chunk_O
 // TODO: need to build out free_tree functionality (ll to start then rb tree)
 
 
-//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!ISSUES on LINE 188!!!!!!!
-
 char *alloc_chunk_size(Arena_List_Node *node, size_t chunk_size_idx){
     //traverse linked list... may not be the most efficient for ll, but ok
     char *my_malloc_ptr = NULL; 
@@ -212,9 +210,9 @@ char *alloc_chunk_size(Arena_List_Node *node, size_t chunk_size_idx){
 
                 break;
             }
+            counter++;
         } 
         itr = itr->right;
-        counter++;
    }
    
    return my_malloc_ptr;
