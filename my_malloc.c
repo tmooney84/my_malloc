@@ -190,11 +190,16 @@ char *alloc_chunk_size(Arena_List_Node *node, size_t chunk_size_idx){
                     itr->right->parent = NULL;
                 }
 
-                //if in list
-                else{
+                //if in list and not last entry of node_pool for current arena
+                else if(itr->right != NULL){
                     prev->right = itr->right;
                     itr->right->parent = prev;
                 }
+
+                else{
+                    prev->right = NULL;
+                }
+
 
                 //RB_NODE null out right (and left) to more easily track
                 itr->left = NULL;
@@ -363,6 +368,7 @@ void *my_malloc(size_t m_size)
     if (arena_list_start && m_size <= MAX_SIZE)
     {
         Arena_List_Node *itr = (Arena_List_Node *)arena_list_start;
+        Arena_List_Node *curr;
         //bool alloc_success = false;
 
         //iterate through arena list
@@ -372,6 +378,7 @@ void *my_malloc(size_t m_size)
             if (itr->arena.arena_header.large_alloc == true)
             {
                 itr = itr->next;
+                
                 continue;
             }
 
@@ -383,15 +390,21 @@ void *my_malloc(size_t m_size)
                 }
             }
             //if chunk not found, go to next arena
+            curr = itr;
             itr = itr->next;
         }
 
         // if not found in arena linked list
-        itr->next = create_default_arena_list_node();
-        my_malloc_ptr = alloc_arena_chunk(m_size, itr->next);
+        Arena_List_Node *new_node = create_default_arena_list_node();
+        if(!new_node){
+            perror("Unable to create new node.\n");
+            return NULL;
+        }
+        curr->next = new_node;
+        my_malloc_ptr = alloc_arena_chunk(m_size, curr->next);
 
         //!!!return my_malloc_ptr;
-        return itr->next;
+        return curr->next;
     }
 
     //2.2 ARENA LIST EXISTS and LARGE 

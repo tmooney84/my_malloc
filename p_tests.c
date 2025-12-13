@@ -156,7 +156,7 @@ int main(void)
     for(int i = 0; i < 20; i++){
         my_malloc(999 * sizeof(char));
     }
-        //my_malloc(999 * sizeof(char));
+        my_malloc(999 * sizeof(char));
     
 
     printf("test Arena_List_Node starts at: %p\n", test);
@@ -165,6 +165,16 @@ int main(void)
     printf("---------------------------------------------------");
     printf("ARENA NODE INFO:\n");
     print_arena_node_info(test);
+    
+    printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+    printf("!!!!!!!!!TEST->NEXT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+    printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+    printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+     print_tables(test->next);
+    printf("---------------------------------------------------");
+    printf("ARENA NODE INFO:\n");
+    print_arena_node_info(test->next);
+    
     return 0;
 }
 
