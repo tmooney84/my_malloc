@@ -126,9 +126,11 @@ void update_table(Arena_List_Node *node, size_t chunk_size, Chunk_Op op){
     
     if(op == DELETE_FROM_TABLE){
         node->arena.arena_header.node_table.rb_node_used[cs_idx]--;
+        node->arena.arena_header.node_table.rb_node_used[NODE_TABLE_SIZE - 1]--;
     }
     else if(op == ADD_TO_TABLE){
         node->arena.arena_header.node_table.rb_node_used[cs_idx]++;
+        node->arena.arena_header.node_table.rb_node_used[NODE_TABLE_SIZE - 1]++;
     }
 
     return;
@@ -137,9 +139,11 @@ void update_table(Arena_List_Node *node, size_t chunk_size, Chunk_Op op){
 void update_table_with_idx(Arena_List_Node *node, size_t chunk_size_idx, Chunk_Op op){
     if(op == DELETE_FROM_TABLE){
         node->arena.arena_header.node_table.rb_node_used[chunk_size_idx]--;
+        node->arena.arena_header.node_table.rb_node_used[NODE_TABLE_SIZE - 1]--;
     }
     else if(op == ADD_TO_TABLE){
         node->arena.arena_header.node_table.rb_node_used[chunk_size_idx]++;
+        node->arena.arena_header.node_table.rb_node_used[NODE_TABLE_SIZE - 1]++;
     }
 
     return;
@@ -434,6 +438,12 @@ void *my_malloc(size_t m_size)
         The free() function frees the memory space pointed to by ptr, which must have been returned by a
         previous call to malloc(), calloc() or realloc(). Otherwise, or if free(ptr) has already been called
         before, undefined behavior occurs. If ptr is NULL, no operation is performed
+
+        if(ptr == NULL){
+            return; 
+        }
+        
+        else if() 
 
             1)  update the pointer table
                     IF number of current allocs == 0
