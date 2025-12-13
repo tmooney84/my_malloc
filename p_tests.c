@@ -133,8 +133,8 @@ void print_arena_node_info(Arena_List_Node *node)
         }
 }
 
-// int main(void)
-// {
+int main(void)
+{
 //     // char *test = my_malloc(20 * sizeof(char));
 //     // if (!test)
 //     // {
@@ -144,45 +144,75 @@ void print_arena_node_info(Arena_List_Node *node)
 //     // printf("test string: %s", test);
 //     // printf("test string pointer address: %p", test);
 
-//     build_rb_idx_table();
+    build_rb_idx_table();
 
-//     printf("TABLES:\n");
-//     Arena_List_Node *test = my_malloc(62 * sizeof(char));
-//     if (!test)
+    printf("TABLES:\n");
+    Arena_List_Node *test = my_malloc(62 * sizeof(char));
+    if (!test)
+    {
+        printf("Error allocating memory.\n");
+    }
+
+    my_malloc(62 * sizeof(char));
+    my_malloc(62 * sizeof(char));
+    my_malloc(62 * sizeof(char));
+    my_malloc(62 * sizeof(char));
+    my_malloc(62 * sizeof(char));
+    my_malloc(62 * sizeof(char));
+    my_malloc(62 * sizeof(char));
+    
+    my_malloc(31 * sizeof(char));
+    my_malloc(31 * sizeof(char));
+    my_malloc(31 * sizeof(char));
+    my_malloc(31 * sizeof(char));
+    my_malloc(31 * sizeof(char));
+    my_malloc(31 * sizeof(char));
+    my_malloc(31 * sizeof(char));
+    my_malloc(31 * sizeof(char));
+    my_malloc(31 * sizeof(char));
+    my_malloc(31 * sizeof(char));
+    my_malloc(31 * sizeof(char));
+    my_malloc(31 * sizeof(char));
+    //my_malloc(31 * sizeof(char));
+    //my_malloc(31 * sizeof(char));
+    //my_malloc(31 * sizeof(char));
+    // my_malloc(31 * sizeof(char));
+    // my_malloc(31 * sizeof(char));
+
+    // my_malloc(62 * sizeof(char));
+
+    printf("test Arena_List_Node starts at: %p\n", test);
+
+    print_tables(test);
+    printf("---------------------------------------------------");
+    printf("ARENA NODE INFO:\n");
+    print_arena_node_info(test);
+    return 0;
+}
+
+// int main(void){
+//     char *test1 = my_malloc(62 * sizeof(char));
+//     if (!test1)
 //     {
 //         printf("Error allocating memory.\n");
 //     }
 
-//     printf("test Arena_List_Node starts at: %p\n", test);
+//     strcpy(test1, "Hello World!\n");
 
-//     print_tables(test);
-//     printf("---------------------------------------------------");
-//     printf("ARENA NODE INFO:\n");
-//     print_arena_node_info(test);
+
+//     char *test2 = my_malloc(63 * sizeof(char));
+//     if (!test2)
+//     {
+//         printf("Error allocating memory.\n");
+//     }
+
+//     strcpy(test2, "This is Not a Drill!!!\n");
+    
+    
+//     printf("test string: %s", test1);
+//     printf("test string pointer address: %p\n", test1);
+//     printf("test string: %s", test2);
+//     printf("test string pointer address: %p\n", test2);
+    
 //     return 0;
 // }
-
-int main(void){
-    char *test1 = my_malloc(62 * sizeof(char));
-    if (!test1)
-    {
-        printf("Error allocating memory.\n");
-    }
-
-    strcpy(test1, "Hello World!\n");
-    printf("test string: %s", test1);
-    printf("test string pointer address: %p\n", test1);
-
-
-    char *test2 = my_malloc(63 * sizeof(char));
-    if (!test2)
-    {
-        printf("Error allocating memory.\n");
-    }
-
-    strcpy(test2, "This is Not a Drill!!!\n");
-    printf("test string: %s", test2);
-    printf("test string pointer address: %p\n", test2);
-    
-    return 0;
-}

@@ -189,10 +189,14 @@ char *alloc_chunk_size(Arena_List_Node *node, size_t chunk_size_idx){
                 //if first, reset free_tree.root
                 if(prev == NULL){
                     node->arena.arena_header.free_tree.root = itr->right;
+                    itr->right->parent = NULL;
                 }
 
                 //if in list
-                prev->right = itr->right;
+                else{
+                    prev->right = itr->right;
+                    itr->right->parent = prev;
+                }
 
                 //RB_NODE null out right (and left) to more easily track
                 itr->left = NULL;
@@ -335,8 +339,8 @@ void *my_malloc(size_t m_size)
        // TESTING:
        // printf("arena_list_start = %p\n", arena_list_start);    //!!!!!!!!!!!!!!!!
         
-       return my_malloc_ptr;
-        //!!!return head;
+       //!!!return my_malloc_ptr;
+        return head;
     }
 
     //1.2) NO ARENA AND BIG
@@ -351,8 +355,8 @@ void *my_malloc(size_t m_size)
             perror("Unable to make small allocation with newly created arena");
             return NULL;
         }
-        return my_malloc_ptr;
-        //!!!return head;
+        //!!!return my_malloc_ptr;
+        return head;
     }
     
     //2) ARENA LIST EXISTS
@@ -388,8 +392,8 @@ void *my_malloc(size_t m_size)
         itr->next = create_default_arena_list_node();
         my_malloc_ptr = alloc_arena_chunk(m_size, itr->next);
 
-        return my_malloc_ptr;
-        //!!!return itr->next;
+        //!!!return my_malloc_ptr;
+        return itr->next;
     }
 
     //2.2 ARENA LIST EXISTS and LARGE 
@@ -402,8 +406,8 @@ void *my_malloc(size_t m_size)
         for (; itr != NULL; itr = itr->next)
             ;
         itr->next = node;
-        return my_malloc_ptr;
-        //!!!return node;
+        //!!!return my_malloc_ptr;
+        return node;
     }
 
     ///!!!return my_malloc_ptr;
