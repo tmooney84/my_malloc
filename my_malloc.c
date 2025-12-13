@@ -71,6 +71,7 @@ void build_default_rb_node_pool(Arena_List_Node *node)
     for (uint32_t i = 0; i < rb_node_table[NODE_TABLE_SIZE - 1]; i++)
     {
         //pool[i].addr >>> set in build_default_chunks_area() function
+        pool[i].rb_node_num = i; 
         pool[i].size = get_rb_node_size(i);
         pool[i].left = NULL;
         pool[i].right = NULL;
@@ -430,28 +431,48 @@ void *my_malloc(size_t m_size)
     return NULL; //!!!!
 }
 
+// The free() function frees the memory space pointed to by ptr, which must have been returned by a
+// previous call to malloc(), calloc() or realloc(). Otherwise, or if free(ptr) has already been called
+// before, undefined behavior occurs. If ptr is NULL, no operation is performed
 
-    // my_free
-//    void free(void *ptr)
+
+//    void my_free(void *ptr)
  //   {
         /*
-        The free() function frees the memory space pointed to by ptr, which must have been returned by a
-        previous call to malloc(), calloc() or realloc(). Otherwise, or if free(ptr) has already been called
-        before, undefined behavior occurs. If ptr is NULL, no operation is performed
 
         if(ptr == NULL){
             return; 
         }
         
-        else if() 
+        1) need to go to the malloc'd ptr then - sizeof(Chunk_Header)
+        Chunk_Header *curr_head = (Chunk_Header *)(ptr - sizeof(Chunk_Header));
+        curr_head->flags = FREE;
 
-            1)  update the pointer table
-                    IF number of current allocs == 0
-                        UNMAP THE ARENA and DELETE from Linked List
-                    ELSE IF the pointer table has additional allocs:
-                        look at chunk size and add freed block to R-B Tree and update table (MUTEX'D???)
-                    ELSE IF current allocs < 0
-                        RETURN ERROR
+        RB_Node *curr_rb_node = (RB_Node *)curr_head->assoc_rb_node;
+        //need to add back into list for right and parent
+
+
+
+        2) then cast address to (Chunk Header)... update header
+        3) jump to rb node, update that too
+        4) update used_table
+        5) then check the used_table[NODE_TABLE_SIZE - 1] == 0
+                if used_table[NODE_TABLE_SIZE - 1] < 0 RETURN ERROR
+                if so then can then can unmap memory of the current ARENA_LIST_NODE 
+                and update arena_list_start LIST... so delete node in middle end or beginning
+                    which sets arena_list_start == NULL;
+
+
+
+
+
+            // 1)  update the pointer table
+            //         IF number of current allocs == 0
+            //             UNMAP THE ARENA and DELETE from Linked List
+            //         ELSE IF the pointer table has additional allocs:
+            //             look at chunk size and add freed block to R-B Tree and update table (MUTEX'D???)
+            //         ELSE IF current allocs < 0
+            //             RETURN ERROR
         */
 //    }
 

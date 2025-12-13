@@ -48,6 +48,7 @@ typedef struct Chunk_Header{
 
 typedef struct RB_Node{
     Chunk_Header *assoc_c_h_addr;     //associated Chunk_Header Address
+    size_t rb_node_num; //!!! only needed for linked list version
     size_t size;
     struct RB_Node *left;
     struct RB_Node *right;

@@ -84,6 +84,7 @@ void print_arena_node_info(Arena_List_Node *node)
     {
         printf("------------------RB NODE[%d]----------------------\n", i);
         printf("RB_NODE[%d] assoc_c_h_addr (points to chunk header): %p\n", i, node->arena.node_pool[i].assoc_c_h_addr);
+        printf("RB_NODE[%d] rb_node_num: %ld\n", i, node->arena.node_pool[i].rb_node_num);
         printf("RB_NODE[%d] size: %ld\n", i, node->arena.node_pool[i].size);
         printf("RB_NODE[%d] left: %p\n", i, node->arena.node_pool[i].left);
         printf("RB_NODE[%d] right: %p\n", i, node->arena.node_pool[i].right);
