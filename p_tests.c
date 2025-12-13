@@ -153,7 +153,10 @@ int main(void)
         printf("Error allocating memory.\n");
     }
 
+    for(int i = 0; i < 20; i++){
         my_malloc(999 * sizeof(char));
+    }
+        //my_malloc(999 * sizeof(char));
     
 
     printf("test Arena_List_Node starts at: %p\n", test);
