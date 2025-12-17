@@ -395,18 +395,20 @@ void *my_malloc(size_t m_size)
     if (arena_list_start && m_size <= MAX_SIZE)
     {
         Arena_List_Node *itr = (Arena_List_Node *)arena_list_start;
-        Arena_List_Node *curr;
+        //Arena_List_Node *curr;
         //bool alloc_success = false;
 
         //iterate through arena list
         while (itr != NULL)
         {
             // if LARGE SIZE custom mmap alloc... skip to next arena
-            if (itr->arena.arena_header.large_alloc == true)
+            if (itr->arena.arena_header.large_alloc == true && itr->next == NULL)
             {
+                break;
+            }
+
+            else if (itr->arena.arena_header.large_alloc == true && itr->next != NULL){
                 itr = itr->next;
-                
-                continue;
             }
 
             else if(itr->arena.arena_header.large_alloc == false)
@@ -417,8 +419,6 @@ void *my_malloc(size_t m_size)
                 }
             }
             //if chunk not found, go to next arena
-            curr = itr;
-            itr = itr->next;
         }
 
         // if not found in arena linked list
@@ -427,11 +427,11 @@ void *my_malloc(size_t m_size)
             perror("Unable to create new node.\n");
             return NULL;
         }
-        curr->next = new_node;
-        my_malloc_ptr = alloc_arena_chunk(m_size, curr->next);
+        itr->next = new_node;
+        my_malloc_ptr = alloc_arena_chunk(m_size, itr->next);
 
         //!!!return my_malloc_ptr;
-        return curr->next;
+        return itr->next;
     }
 
     //2.2 ARENA LIST EXISTS and LARGE 
