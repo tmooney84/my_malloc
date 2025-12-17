@@ -457,29 +457,66 @@ Arena_List_Node *my_malloc(size_t m_size)
 // previous call to malloc(), calloc() or realloc(). Otherwise, or if free(ptr) has already been called
 // before, undefined behavior occurs. If ptr is NULL, no operation is performed
 
+bool check_zero_used(Arena_List_Node *node){
+        return node->arena.arena_header.node_table.rb_node_used[NODE_TABLE_SIZE - 1] == 0;
+    }
+
+void unmap_arena_list_node(Arena_List_Node *curr_node){
+    //remove from arena_list
+    Arena_List_Node* head = (Arena_List_Node *)arena_list_start;
+    Arena_List_Node* itr = (Arena_List_Node *)arena_list_start;
+
+    //first node
+    if(itr == curr_node){
+        itr->next->prev = NULL;
+        arena_list_start = (void *)itr->next; 
+    }
+    while(itr != curr_node && itr != NULL){
+        itr = itr->next; 
+    }
+                
+    //in middle
+    if(itr == curr_node && itr->next != NULL){
+        itr->prev->next = itr->next;
+        itr->next->prev = itr->prev;
+    }
+    else if(itr == curr_node && itr->next == NULL){
+        itr->prev->next = NULL;
+    }
+    else{
+        perror("Unable to find arena for removal"); 
+        return;
+    }
+            
+    if(-1 == munmap((void *)curr_node, curr_node->arena.arena_header.size)){
+        perror("Unable to unmap arena from memory\n");
+        return; 
+    }
+        return;
+}
 
 //---------------TODO: Need to memset() the returned memory to zero!!!------------
-//my_free >>> READY TO DEBUG
-//    void my_free(void *ptr)
- //   {
-        /*
-
+void my_free(void *ptr)
+    {
         if(ptr == NULL){
             return; 
         }
         
-        1) need to go to the malloc'd ptr then - sizeof(Chunk_Header)
+        //1) need to go to the malloc'd ptr then - sizeof(Chunk_Header)
 
         //update Chunk_Header
         Chunk_Header *curr_head = (Chunk_Header *)(ptr - sizeof(Chunk_Header));
         curr_head->flags = FREE;
+
+        //zero out allocated space 
+        memset(curr_head + sizeof(Chunk_Header), 0, curr_head->size);
 
         //update RB_Node and add back in list + table
         RB_Node *curr_rb_node = (RB_Node *)curr_head->assoc_rb_node;
         size_t freed_node_num = curr_rb_node->rb_node_num;
         size_t freed_node_size = curr_rb_node->size;
         
-        Arena_List_Node *curr_node = (Arena_List_Node *)(curr_rb_node - freed_node_num *sizeof(RB_Node) - sizeof(Arena_Header) - 2 * Arena_List_Node *);
+        Arena_List_Node *curr_node = (Arena_List_Node *)(curr_rb_node - freed_node_num *sizeof(RB_Node) - sizeof(Arena_Header) - 2 * sizeof(Arena_List_Node *));
 
 //!!!!!!!!!!!!!!!!!!!!!!START LINKED LIST VERSION!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             //add curr_node back in to linked list
@@ -494,13 +531,22 @@ Arena_List_Node *my_malloc(size_t m_size)
             curr_rb_node->parent = NULL;
             itr->parent = curr_rb_node;
             head = curr_rb_node;
-            update_table(curr_node, freed_node_size, ADD_TO_TABLE);
+            curr_node->arena.arena_header.free_tree.root = head;
+            update_table(curr_node, freed_node_size, DELETE_FROM_TABLE);
+            
+        
+        //then check table 0, arena node list stuff !!! should I do this here or below
+           if(true == check_zero_used(curr_node))
+            {
+                unmap_arena_list_node(curr_node);
+                return;
+            }
 
-            //then check table 0, arena node list stuff !!! should I do this here or below
+            return;
         }
-   
-        else if{
-            while(itr != NULL && itr->size != freed_node_size && counter < rb_node_table[NODE_TABLE_SIZE - 1] - 1){
+//LEFT OFF HERE!!!!!!!!!!!!!!!!!!!!!!!!
+        //fast forward to matching node size
+        while(itr != NULL && itr->size != freed_node_size && counter < rb_node_table[NODE_TABLE_SIZE - 1] - 1){
                 itr = itr->right; 
                 counter++;
             }
@@ -509,67 +555,32 @@ Arena_List_Node *my_malloc(size_t m_size)
                 if(itr->right == NULL && itr->size >= freed_node_size){
                     //SAME AS MIDDLE
                 }
+
                 else if(itr->right == NULL && itr->size < freed_node_size){
                     itr->right = curr_rb_node;
                     curr_rb_node->parent = itr;
                     curr_rb_node->right = NULL; 
-                    update_table(curr_node, freed_node_size, ADD_TO_TABLE);
+                    update_table(curr_node, freed_node_size, DELETE_FROM_TABLE);
             //then check table 0, arena node list stuff !!! should I do this here or below
                 }
+
         //if in middle
                 else{
                     curr_rb_node->right = itr;
                     curr_rb_node->parent = itr->parent;
                     itr->parent.right = curr_rb_node;
                     itr->parent = curr_rb_node;
-                    update_table(curr_node, freed_node_size, ADD_TO_TABLE);
+                    update_table(curr_node, freed_node_size, DELETE_FROM_TABLE);
             //then check table 0, arena node list stuff !!! should I do this here or below
                 }
 //!!!!!!!!!!!!end LINKED LIST VERSION!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-            //check if arena needts to be removed
-            if(curr_node->arena.arena_header.node_table.rb_node_used[NODE_TABLE_SIZE] == 0){
-            //remove from arena_list
-
-                Arena* head = (Arena *)arena_list_start;
-                Arena* itr = (Arena *)arena_list_start;
-
-                //first node
-                if(itr == curr_node){
-                    itr->next->prev = NULL;
-                    arena_list_start = (void *)itr->next; 
-                }
-                while(itr != curr_node && itr != NULL){
-                    itr = itr->next; 
-                }
-                
-                //in middle
-                if(itr == curr_node && itr->next != NULL){
-                    itr->prev->next = itr->next;
-                    itr->next->prev = itr->prev;
-                }
-                else if(itr == curr_node && itr->next == NULL){
-                    itr->prev->next = NULL;
-                }
-
-                else{
-                    perror("Unable to find arena for removal"); 
-                    return;
-                }
-            
-                if(-1 == munmap((void *)curr_node, curr_node->arena.arena_header.size)){
-                    perror("Unable to unmap arena from memory\n");
-                    return; 
-                }
-            }
-
-            return;
         }
+    }
 
         
        
         
-
+/*
 
         //need to add back into list for right and parent
 
