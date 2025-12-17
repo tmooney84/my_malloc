@@ -148,16 +148,18 @@ int main(void)
     build_rb_idx_table();
 
     printf("TABLES:\n");
-    Arena_List_Node *test = my_malloc(62 * sizeof(char));
+    //Arena_List_Node *test = my_malloc(62 * sizeof(char));
+    Arena_List_Node *test = my_malloc(5000 * sizeof(char));
     if (!test)
     {
         printf("Error allocating memory.\n");
     }
 
-    for(int i = 0; i < 20; i++){
-        my_malloc(999 * sizeof(char));
-    }
-        my_malloc(999 * sizeof(char));
+    my_malloc(10000 * sizeof(char));
+    // for(int i = 0; i < 20; i++){
+    //     my_malloc(999 * sizeof(char));
+    // }
+        //my_malloc(999 * sizeof(char));
     
 
     printf("test Arena_List_Node starts at: %p\n", test);
@@ -175,7 +177,9 @@ int main(void)
     printf("---------------------------------------------------");
     printf("ARENA NODE INFO:\n");
     print_arena_node_info(test->next);
-    
+  
+  
+    // printf("SIZE OF ARENA LIST NODE: %ld", sizeof(Arena_List_Node)); 
     return 0;
 }
 

@@ -255,8 +255,9 @@ char *large_allocation(size_t m_size, Arena_List_Node *node){
     char *my_malloc_ptr = NULL;
 
     Chunk_Header *chunk_header = (Chunk_Header *)node->chunks_start_addr;
-    chunk_header->flags = NA;
-    chunk_header->size = chunk_header->prev_size = m_size + sizeof(Chunk_Header);
+    chunk_header->flags = IN_USE;
+    chunk_header->size = m_size + sizeof(Chunk_Header);
+    chunk_header->prev_size = chunk_header->size;
     my_malloc_ptr = (char *)chunk_header + sizeof(Chunk_Header);
 
     return my_malloc_ptr;
@@ -299,13 +300,34 @@ Arena_List_Node *create_custom_arena_list_node(size_t size)
 {
     Arena_List_Node *node = NULL;
 
+    //not sure why there is a segfault without an extra ~5000 bytes 
+    size_t m_size = (size + sizeof(Chunk_Header) + 1 * sizeof(Arena_List_Node) + 5000);
+
     // needs to have mmap of size + custom info? 1.15 * size or more exact???
-    void *mmap_region = mmap(0, size + sizeof(Chunk_Header) + sizeof(Arena_List_Node), PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE, -1, 0);
+    void *mmap_region = mmap(0, m_size, PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE, -1, 0);
     node = (Arena_List_Node *)mmap_region;
+    node->next = NULL;
+    node->prev = NULL;
     node->arena.arena_header.base = &node->arena;
     node->arena.arena_header.large_alloc = true;
-    node->arena.arena_header.size = size + sizeof(Chunk_Header);
+    node->arena.arena_header.size = m_size;
+    node->arena.arena_header.rb_node_pool = node->arena.node_pool;
     node->chunks_start_addr = (char *)node + sizeof(Arena_List_Node);
+    
+    //only one node/chunk is used
+    node->arena.node_pool[0].assoc_c_h_addr = (Chunk_Header *)node->chunks_start_addr;
+    node->arena.node_pool[0].rb_node_num = 0;
+    node->arena.node_pool[0].size = node->arena.arena_header.size;
+    node->arena.node_pool[0].left = NULL;
+    node->arena.node_pool[0].right = NULL;
+    node->arena.node_pool[0].parent = NULL;
+    node->arena.node_pool[0].color = NO_COLOR;
+
+    Chunk_Header *header = (Chunk_Header *)node->chunks_start_addr;
+    header->assoc_rb_node = (void *)&node->arena.node_pool[0];
+    header->flags = NA;
+    header->size = size;
+    header->prev_size = size;
 
     return node;
 }
@@ -419,7 +441,7 @@ void *my_malloc(size_t m_size)
         Arena_List_Node *node = create_custom_arena_list_node(m_size);
         my_malloc_ptr = large_allocation(m_size, node);
 
-        for (; itr != NULL; itr = itr->next)
+        for (; itr->next != NULL; itr = itr->next)
             ;
         itr->next = node;
         //!!!return my_malloc_ptr;
