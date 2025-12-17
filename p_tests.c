@@ -134,17 +134,9 @@ void print_arena_node_info(Arena_List_Node *node)
         }
 }
 
+//-------------------ARENA TESTING---------------------------------//
 int main(void)
 {
-//     // char *test = my_malloc(20 * sizeof(char));
-//     // if (!test)
-//     // {
-//     //     printf("Error allocating memory.\n");
-//     // }
-
-//     // printf("test string: %s", test);
-//     // printf("test string pointer address: %p", test);
-
     build_rb_idx_table();
 
     printf("TABLES:\n");
@@ -183,6 +175,8 @@ int main(void)
     return 0;
 }
 
+//--------------MALLOC FRONT END TESTING-----------------------//
+
 // int main(void){
 //     char *test1 = my_malloc(62 * sizeof(char));
 //     if (!test1)
@@ -193,7 +187,7 @@ int main(void)
 //     strcpy(test1, "Hello World!\n");
 
 
-//     char *test2 = my_malloc(63 * sizeof(char));
+//     char *test2 = my_malloc(1000 * sizeof(char));
 //     if (!test2)
 //     {
 //         printf("Error allocating memory.\n");

@@ -333,8 +333,8 @@ Arena_List_Node *create_custom_arena_list_node(size_t size)
 }
 
 
-void *my_malloc(size_t m_size)
-//!!!Arena_List_Node *my_malloc(size_t m_size)
+//!!!void *my_malloc(size_t m_size)
+Arena_List_Node *my_malloc(size_t m_size)
 {
     void *my_malloc_ptr = NULL;
     
@@ -457,6 +457,8 @@ void *my_malloc(size_t m_size)
 // previous call to malloc(), calloc() or realloc(). Otherwise, or if free(ptr) has already been called
 // before, undefined behavior occurs. If ptr is NULL, no operation is performed
 
+
+//---------------TODO: Need to memset() the returned memory to zero!!!------------
 //my_free >>> READY TO DEBUG
 //    void my_free(void *ptr)
  //   {
