@@ -471,8 +471,19 @@ void unmap_arena_list_node(Arena_List_Node *curr_node){
 
     //first node
     if(itr == curr_node){
-        itr->next->prev = NULL;
-        arena_list_start = (void *)itr->next; 
+        Arena_List_Node *next = itr->next;
+        next->prev = NULL;
+        arena_list_start = (void *)itr->next;
+
+        size_t m_size = curr_node->arena.arena_header.size;
+
+        if(0 == munmap((void *)curr_node, m_size)){
+            return; 
+        }
+        else{
+            perror("Unable to unmap arena from memory\n");
+            return;
+        }
     }
     while(itr != curr_node && itr != NULL){
         itr = itr->next; 
@@ -480,8 +491,11 @@ void unmap_arena_list_node(Arena_List_Node *curr_node){
                 
     //in middle
     if(itr == curr_node && itr->next != NULL){
-        itr->prev->next = itr->next;
-        itr->next->prev = itr->prev;
+        Arena_List_Node *prev = itr->prev;
+        Arena_List_Node *next = itr->next;
+        prev->next = itr->next;
+        next->prev = itr->prev;
+        return;
     }
     else if(itr == curr_node && itr->next == NULL){
         itr->prev->next = NULL;
@@ -491,10 +505,12 @@ void unmap_arena_list_node(Arena_List_Node *curr_node){
         return;
     }
             
-    if(-1 == munmap((void *)curr_node, curr_node->arena.arena_header.size)){
-        perror("Unable to unmap arena from memory\n");
+    size_t m_size = curr_node->arena.arena_header.size;
+
+    if(0 == munmap((void *)curr_node, m_size)){
         return; 
     }
+        perror("Unable to unmap arena from memory\n");
         return;
 }
 

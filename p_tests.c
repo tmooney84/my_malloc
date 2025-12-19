@@ -189,8 +189,10 @@ int main(void)
 
 
     fflush(stdout);
-    fclose(stdout);
+    //fclose(stdout);
 
+    //restores print to screen
+    freopen("/dev/tty", "w", stdout);
 
     uintptr_t addr1 = 0;
     //uintptr_t addr2 = 0;
@@ -207,7 +209,7 @@ int main(void)
     //char *ptr2 = (char *)addr2 + sizeof(Chunk_Header);
     //char *ptr2 = (char *)addr2;
     //strcpy(ptr2, "This is Not a Drill!!!\n");
-    
+   
     printf("test string: %s", ptr1);
     printf("test string pointer address: %p\n", ptr1);
     //printf("test string: %s", ptr2);

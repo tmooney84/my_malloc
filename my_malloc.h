@@ -10,7 +10,6 @@
 #include "arena.h"
 #include "bitwise_helpers.h"
 
-
 int build_rb_idx_table();
 size_t get_rb_node_size(uint32_t idx);
 void set_default_arena_header(Arena_List_Node *node);
@@ -25,8 +24,8 @@ char *large_allocation(size_t m_size, Arena_List_Node *node);
 void build_arena(Arena_List_Node *node);
 Arena_List_Node *create_default_arena_list_node();
 Arena_List_Node *create_custom_arena_list_node(size_t size);
-void *my_malloc(size_t m_size);
-//Arena_List_Node *my_malloc(size_t m_size);
+//void *my_malloc(size_t m_size);
+Arena_List_Node *my_malloc(size_t m_size);
 
 bool check_zero_used(Arena_List_Node *node);
 void unmap_arena_list_node(Arena_List_Node *curr_node);
