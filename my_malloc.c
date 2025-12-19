@@ -317,7 +317,7 @@ Arena_List_Node *create_custom_arena_list_node(size_t size)
     //only one node/chunk is used
     node->arena.node_pool[0].assoc_c_h_addr = (Chunk_Header *)node->chunks_start_addr;
     node->arena.node_pool[0].rb_node_num = 0;
-    node->arena.node_pool[0].size = node->arena.arena_header.size;
+    node->arena.node_pool[0].size = size;
     node->arena.node_pool[0].left = NULL;
     node->arena.node_pool[0].right = NULL;
     node->arena.node_pool[0].parent = NULL;
@@ -350,6 +350,7 @@ Arena_List_Node *my_malloc(size_t m_size)
     {
         // pass pointer that can be passed to free thus smallest possible allocation
         //return my_malloc_ptr ???
+        return NULL; //???
     }
 
     //1) NO ARENA, CREATE/MMAP ARENA
@@ -368,7 +369,7 @@ Arena_List_Node *my_malloc(size_t m_size)
 
        // TESTING:
        // printf("arena_list_start = %p\n", arena_list_start);    //!!!!!!!!!!!!!!!!
-        
+       printf("POINTER ADDR @@@@@@@@@@@@@@@@@@@@@ %p\n", my_malloc_ptr); 
        //!!!return my_malloc_ptr;
         return head;
     }
@@ -445,6 +446,8 @@ Arena_List_Node *my_malloc(size_t m_size)
             ;
         itr->next = node;
         //!!!return my_malloc_ptr;
+       
+        printf("POINTER ADDR @@@@@@@@@@@@@@@@@@@@@ %p\n", my_malloc_ptr); 
         return node;
     }
 
@@ -463,7 +466,6 @@ bool check_zero_used(Arena_List_Node *node){
 
 void unmap_arena_list_node(Arena_List_Node *curr_node){
     //remove from arena_list
-    Arena_List_Node* head = (Arena_List_Node *)arena_list_start;
     Arena_List_Node* itr = (Arena_List_Node *)arena_list_start;
 
     //first node
@@ -509,7 +511,7 @@ void my_free(void *ptr)
         curr_head->flags = FREE;
 
         //zero out allocated space 
-        memset(curr_head + sizeof(Chunk_Header), 0, curr_head->size);
+        memset((char *)curr_head + sizeof(Chunk_Header), 0, curr_head->size);
 
         //update RB_Node and add back in list + table
         RB_Node *curr_rb_node = (RB_Node *)curr_head->assoc_rb_node;
@@ -525,6 +527,12 @@ void my_free(void *ptr)
 
         size_t counter = 0;
 
+        //if size larger than 2k
+        if(itr->size > MAX_SIZE){
+            unmap_arena_list_node(curr_node);
+            return;
+        }
+
         //if front has equal size
         if(itr->size == freed_node_size){
             curr_rb_node->right = itr;
@@ -536,7 +544,7 @@ void my_free(void *ptr)
             
         
         //then check table 0, arena node list stuff !!! should I do this here or below
-           if(true == check_zero_used(curr_node))
+            if(true == check_zero_used(curr_node))
             {
                 unmap_arena_list_node(curr_node);
                 return;
@@ -544,37 +552,55 @@ void my_free(void *ptr)
 
             return;
         }
-//LEFT OFF HERE!!!!!!!!!!!!!!!!!!!!!!!!
+//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!DOES THE CURRENT_SIZE WORK FOR UNMAPPING LARGE ALLOC CHUNK AND MEMSET OVERWRITE THINGS?
         //fast forward to matching node size
-        while(itr != NULL && itr->size != freed_node_size && counter < rb_node_table[NODE_TABLE_SIZE - 1] - 1){
+        while(itr->right != NULL && itr->size != freed_node_size && counter < rb_node_table[NODE_TABLE_SIZE - 1] - 1){
                 itr = itr->right; 
                 counter++;
             }
                 
-            //if at end
-                if(itr->right == NULL && itr->size >= freed_node_size){
-                    //SAME AS MIDDLE
-                }
+            
+        //if at end
+        if(itr->right == NULL && itr->size < freed_node_size){
+            itr->right = curr_rb_node;
+            curr_rb_node->parent = itr;
+            curr_rb_node->right = NULL; 
+            update_table(curr_node, freed_node_size, DELETE_FROM_TABLE);
+            
+            if(true == check_zero_used(curr_node))
+            {
+                unmap_arena_list_node(curr_node);
+            }
+            
+            return;
+        }
 
-                else if(itr->right == NULL && itr->size < freed_node_size){
-                    itr->right = curr_rb_node;
-                    curr_rb_node->parent = itr;
-                    curr_rb_node->right = NULL; 
-                    update_table(curr_node, freed_node_size, DELETE_FROM_TABLE);
-            //then check table 0, arena node list stuff !!! should I do this here or below
-                }
+        // else if(itr->right == NULL && itr->size >= freed_node_size){
+        //             //SAME AS MIDDLE
+        // }
 
         //if in middle
-                else{
-                    curr_rb_node->right = itr;
-                    curr_rb_node->parent = itr->parent;
-                    itr->parent.right = curr_rb_node;
-                    itr->parent = curr_rb_node;
-                    update_table(curr_node, freed_node_size, DELETE_FROM_TABLE);
-            //then check table 0, arena node list stuff !!! should I do this here or below
+
+        else{
+                curr_rb_node->right = itr;
+                curr_rb_node->parent = itr->parent;
+                RB_Node *c_parent = curr_rb_node->parent;
+                //itr->parent.right = curr_rb_node;
+                c_parent->right = curr_rb_node;
+                itr->parent = curr_rb_node;
+                update_table(curr_node, freed_node_size, DELETE_FROM_TABLE);
+            
+                if(true == check_zero_used(curr_node))
+                {
+                    unmap_arena_list_node(curr_node);
                 }
+
+                return;
+            }
 //!!!!!!!!!!!!end LINKED LIST VERSION!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        }
+            perror("Unable to free memory\n");
+
+            return;
     }
 
         
