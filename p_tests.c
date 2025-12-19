@@ -153,13 +153,14 @@ int main(void)
 
     printf("TABLES:\n");
     //Arena_List_Node *test = my_malloc(62 * sizeof(char));
-    Arena_List_Node *test = my_malloc(10000 * sizeof(char));
+    Arena_List_Node *test = my_malloc(100 * sizeof(char));
     if (!test)
     {
         printf("Error allocating memory.\n");
     }
 
-    //my_malloc(5000 * sizeof(char));
+    my_malloc(5000 * sizeof(char));
+
     // for(int i = 0; i < 20; i++){
     //     my_malloc(999 * sizeof(char));
     // }
@@ -173,56 +174,55 @@ int main(void)
     printf("ARENA NODE INFO:\n");
     print_arena_node_info(test);
     
-    // printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-    // printf("!!!!!!!!!TEST->NEXT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-    // printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-    // printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-    //  print_tables(test->next);
-    // printf("---------------------------------------------------");
-    // printf("ARENA NODE INFO:\n");
-    // print_arena_node_info(test->next);
+    printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+    printf("!!!!!!!!!TEST->NEXT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+    printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+    printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+    print_tables(test->next);
+    printf("---------------------------------------------------");
+    printf("ARENA NODE INFO:\n");
+    print_arena_node_info(test->next);
 
-    // printf("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n");
+    printf("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n");
 
     printf("Arena 1 Addr: %p\n", test);
-    //printf("Arena 2 Addr: %p\n", test->next);
-
-
-    fflush(stdout);
+    printf("Arena 2 Addr: %p\n", test->next);
 
     //restores print to screen
     freopen("/dev/tty", "w", stdout);
 
     uintptr_t addr1 = 0;
-    //uintptr_t addr2 = 0;
+    uintptr_t addr2 = 0;
     printf("Enter first address: ");
     scanf("%" SCNxPTR, &addr1);
     
-    //printf("Enter second address: ");
-    //scanf("%" SCNxPTR, &addr2);
+    printf("Enter second address: ");
+    scanf("%" SCNxPTR, &addr2);
     
     //char *ptr1 = (char *)addr1 + sizeof(Chunk_Header);
     char *ptr1 = (char *)addr1;
     strcpy(ptr1, "Hello world!\n");
 
     //char *ptr2 = (char *)addr2 + sizeof(Chunk_Header);
-    //char *ptr2 = (char *)addr2;
+    char *ptr2 = (char *)addr2;
+    memset(ptr2, '!', 5000);
     //strcpy(ptr2, "This is Not a Drill!!!\n");
    
-    printf("test string: %s", ptr1);
-    printf("test string pointer address: %p\n", ptr1);
-    //printf("test string: %s", ptr2);
-    //printf("test string pointer address: %p\n", ptr2);
+    printf("ptr1 string: %s", ptr1);
+    printf("ptr1 string pointer address: %p\n", ptr1);
+    printf("ptr2 string: %s", ptr2);
+    printf("ptr2 string pointer address: %p\n", ptr2);
  
 
 
+    my_free(ptr2);
     my_free(ptr1);
-    //my_free(ptr2);
+   
+    printf("ptr2 after free: %s", ptr2);
+    printf("ptr2 string pointer address: %p\n", ptr2 - sizeof(Chunk_Header));
 
-    printf("test string: %s", ptr1);
-    printf("test string pointer address: %p\n", ptr1 - sizeof(Chunk_Header));
-   // printf("test string: %s", ptr2);
-   // printf("test string pointer address: %p\n", ptr2 - sizeof(Chunk_Header));
+    printf("ptr1 string: %s", ptr1);
+    printf("ptr1 string pointer address: %p\n", ptr1 - sizeof(Chunk_Header));
   
     // printf("SIZE OF ARENA LIST NODE: %ld", sizeof(Arena_List_Node)); 
     
