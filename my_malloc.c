@@ -8,8 +8,6 @@
 #include "arena.h"
 #include "bitwise_helpers.h"
 
-// REMEMBER TO ADD 16-BIT ALIGNMENT!!!
-
 /*
        The malloc() function allocates size bytes and returns a pointer
        to the allocated memory.  The memory is not initialized.  If size
@@ -150,15 +148,6 @@ void update_table_with_idx(Arena_List_Node *node, size_t chunk_size_idx, Chunk_O
 
     return;
 }
-
-//remove node in free_tree + update table + update chunk header(LINKED LIST VERSION)
-
-//add node in free_tree + update table + update chunk header(LINKED LIST VERSION)
-
-//find node in free_tree + update table + update chunk header(LINKED LIST VERSION)
-
-// TODO: need to build out free_tree functionality (ll to start then rb tree)
-
 
 char *alloc_chunk_size(Arena_List_Node *node, size_t chunk_size_idx){
     //traverse linked list... may not be the most efficient for ll, but ok
@@ -468,14 +457,25 @@ bool check_zero_used(Arena_List_Node *node){
 void unmap_arena_list_node(Arena_List_Node *curr_node){
     //remove from arena_list
     Arena_List_Node* itr = (Arena_List_Node *)arena_list_start;
+    size_t m_size = curr_node->arena.arena_header.size;
 
-    //first node
-    if(itr == curr_node){
+    if(itr == curr_node && itr->next == NULL){
+        arena_list_start = NULL;
+    
+        if(0 == munmap((void *)curr_node, m_size)){
+            return; 
+        }
+        else{
+            perror("Unable to unmap arena from memory\n");
+            return;
+        }
+    }
+    //first node and next node
+    else if(itr == curr_node && itr->next){
         Arena_List_Node *next = itr->next;
         next->prev = NULL;
         arena_list_start = (void *)itr->next;
 
-        size_t m_size = curr_node->arena.arena_header.size;
 
         if(0 == munmap((void *)curr_node, m_size)){
             return; 
@@ -505,8 +505,6 @@ void unmap_arena_list_node(Arena_List_Node *curr_node){
         return;
     }
             
-    size_t m_size = curr_node->arena.arena_header.size;
-
     if(0 == munmap((void *)curr_node, m_size)){
         return; 
     }

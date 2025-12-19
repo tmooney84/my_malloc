@@ -159,7 +159,7 @@ int main(void)
         printf("Error allocating memory.\n");
     }
 
-    my_malloc(5000 * sizeof(char));
+    //my_malloc(5000 * sizeof(char));
     // for(int i = 0; i < 20; i++){
     //     my_malloc(999 * sizeof(char));
     // }
@@ -173,23 +173,22 @@ int main(void)
     printf("ARENA NODE INFO:\n");
     print_arena_node_info(test);
     
-    printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-    printf("!!!!!!!!!TEST->NEXT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-    printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-    printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-     print_tables(test->next);
-    printf("---------------------------------------------------");
-    printf("ARENA NODE INFO:\n");
-    print_arena_node_info(test->next);
+    // printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+    // printf("!!!!!!!!!TEST->NEXT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+    // printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+    // printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+    //  print_tables(test->next);
+    // printf("---------------------------------------------------");
+    // printf("ARENA NODE INFO:\n");
+    // print_arena_node_info(test->next);
 
-    printf("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n");
+    // printf("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n");
 
     printf("Arena 1 Addr: %p\n", test);
-    printf("Arena 2 Addr: %p\n", test->next);
+    //printf("Arena 2 Addr: %p\n", test->next);
 
 
     fflush(stdout);
-    //fclose(stdout);
 
     //restores print to screen
     freopen("/dev/tty", "w", stdout);
