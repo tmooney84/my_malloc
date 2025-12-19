@@ -193,35 +193,35 @@ int main(void)
 
 
     uintptr_t addr1 = 0;
-    uintptr_t addr2 = 0;
+    //uintptr_t addr2 = 0;
     printf("Enter first address: ");
     scanf("%" SCNxPTR, &addr1);
     
-    printf("Enter second address: ");
-    scanf("%" SCNxPTR, &addr2);
+    //printf("Enter second address: ");
+    //scanf("%" SCNxPTR, &addr2);
     
     //char *ptr1 = (char *)addr1 + sizeof(Chunk_Header);
     char *ptr1 = (char *)addr1;
     strcpy(ptr1, "Hello world!\n");
 
     //char *ptr2 = (char *)addr2 + sizeof(Chunk_Header);
-    char *ptr2 = (char *)addr2;
-    strcpy(ptr2, "This is Not a Drill!!!\n");
+    //char *ptr2 = (char *)addr2;
+    //strcpy(ptr2, "This is Not a Drill!!!\n");
     
     printf("test string: %s", ptr1);
     printf("test string pointer address: %p\n", ptr1);
-    printf("test string: %s", ptr2);
-    printf("test string pointer address: %p\n", ptr2);
+    //printf("test string: %s", ptr2);
+    //printf("test string pointer address: %p\n", ptr2);
  
 
 
     my_free(ptr1);
-    my_free(ptr2);
+    //my_free(ptr2);
 
     printf("test string: %s", ptr1);
     printf("test string pointer address: %p\n", ptr1 - sizeof(Chunk_Header));
-    printf("test string: %s", ptr2);
-    printf("test string pointer address: %p\n", ptr2 - sizeof(Chunk_Header));
+   // printf("test string: %s", ptr2);
+   // printf("test string pointer address: %p\n", ptr2 - sizeof(Chunk_Header));
   
     // printf("SIZE OF ARENA LIST NODE: %ld", sizeof(Arena_List_Node)); 
     

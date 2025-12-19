@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <sys/mman.h>
 #include <string.h>
+#include <stddef.h>
 
 #include "arena.h"
 #include "bitwise_helpers.h"
@@ -369,7 +370,7 @@ Arena_List_Node *my_malloc(size_t m_size)
 
        // TESTING:
        // printf("arena_list_start = %p\n", arena_list_start);    //!!!!!!!!!!!!!!!!
-       printf("POINTER ADDR @@@@@@@@@@@@@@@@@@@@@ %p\n", my_malloc_ptr); 
+       printf("POINTER ADDR no arena and small @@@@@@@@@@@@@@@@@@@@@ %p\n", my_malloc_ptr); 
        //!!!return my_malloc_ptr;
         return head;
     }
@@ -447,7 +448,7 @@ Arena_List_Node *my_malloc(size_t m_size)
         itr->next = node;
         //!!!return my_malloc_ptr;
        
-        printf("POINTER ADDR @@@@@@@@@@@@@@@@@@@@@ %p\n", my_malloc_ptr); 
+        printf("POINTER ADDR arena exists and big @@@@@@@@@@@@@@@@@@@@@ %p\n", my_malloc_ptr); 
         return node;
     }
 
@@ -518,7 +519,12 @@ void my_free(void *ptr)
         size_t freed_node_num = curr_rb_node->rb_node_num;
         size_t freed_node_size = curr_rb_node->size;
         
-        Arena_List_Node *curr_node = (Arena_List_Node *)(curr_rb_node - freed_node_num *sizeof(RB_Node) - sizeof(Arena_Header) - 2 * sizeof(Arena_List_Node *));
+        char *rb_ptr = (char *) curr_rb_node;
+        size_t curr_rb_node_offset = sizeof(RB_Node) * freed_node_num;
+
+        char *curr_node_ptr = rb_ptr - curr_rb_node_offset - offsetof(Arena, node_pool[0]) - offsetof(Arena_List_Node, arena);
+        Arena_List_Node *curr_node = (Arena_List_Node *) curr_node_ptr;
+       
 
 //!!!!!!!!!!!!!!!!!!!!!!START LINKED LIST VERSION!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             //add curr_node back in to linked list

@@ -7,7 +7,7 @@
 
 #define NODE_TABLE_SIZE 8
 #define BASE_ARENA_SIZE 65536
-#define MAX_SIZE 3072 
+#define MAX_SIZE 2048 
 #define NODE_POOL_SIZE 194   
 
 
@@ -39,7 +39,7 @@ typedef enum{
 //     "BLACK",
 // };
 
-typedef struct Chunk_Header{
+typedef struct __attribute__((aligned(16))) Chunk_Header{
     void *assoc_rb_node;
     size_t size; //full chunk size including header
     enum{FREE, IN_USE, NA} flags; // FREE or IN_USE
@@ -64,7 +64,7 @@ typedef struct Node_Table {
         uint32_t rb_node_used[NODE_TABLE_SIZE];
     }Node_Table;
 
-typedef struct Arena_Header{
+typedef struct __attribute__((aligned(16))) Arena_Header{
     void *base;
     bool large_alloc; 
     size_t size;
@@ -82,12 +82,12 @@ typedef struct Arena_Header{
 //     //data stored after header;
 // }Chunk;
 
-typedef struct Arena{
+typedef struct __attribute__((aligned(16))) Arena{
     Arena_Header arena_header;
     RB_Node node_pool[NODE_POOL_SIZE];
 }Arena;
 
-typedef struct Arena_List_Node{
+typedef struct __attribute__((aligned(16))) Arena_List_Node{
     //next && prev node above so chunks don't overwrite the pointers
     struct Arena_List_Node *next;
     struct Arena_List_Node *prev;
@@ -103,6 +103,18 @@ typedef struct Arena_List_Node{
 
 
 #endif
+
+
+
+
+
+
+
+
+
+
+
+
 
 //header_size = sizeof(Chunk_Header);
 //Next Chunk stored &chunk[0] + header_size + chunk.chunk_header.size;
