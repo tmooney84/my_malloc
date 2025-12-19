@@ -408,7 +408,6 @@ Arena_List_Node *my_malloc(size_t m_size)
             {
                 my_malloc_ptr = (void *)alloc_arena_chunk(m_size, itr);
                 if(my_malloc_ptr != NULL){
-                printf("POINTER ADDR arena and small @@@@@@@@@@@@@@@@@@@@@ %p\n", my_malloc_ptr); 
                     return my_malloc_ptr;
                 }
             }
@@ -427,6 +426,7 @@ Arena_List_Node *my_malloc(size_t m_size)
         new_node->prev = itr;
         my_malloc_ptr = alloc_arena_chunk(m_size, itr->next);
 
+        printf("POINTER ADDR arena and small @@@@@@@@@@@@@@@@@@@@@ %p\n", my_malloc_ptr); 
         //!!!return my_malloc_ptr;
         return itr->next;
     }

@@ -153,13 +153,13 @@ int main(void)
 
     printf("TABLES:\n");
     //Arena_List_Node *test = my_malloc(62 * sizeof(char));
-    Arena_List_Node *test = my_malloc(100 * sizeof(char));
+    Arena_List_Node *test = my_malloc(5000 * sizeof(char));
     if (!test)
     {
         printf("Error allocating memory.\n");
     }
 
-    my_malloc(5000 * sizeof(char));
+    my_malloc(100 * sizeof(char));
 
     // for(int i = 0; i < 20; i++){
     //     my_malloc(999 * sizeof(char));
@@ -201,11 +201,11 @@ int main(void)
     
     //char *ptr1 = (char *)addr1 + sizeof(Chunk_Header);
     char *ptr1 = (char *)addr1;
-    strcpy(ptr1, "Hello world!\n");
+    memset(ptr1, '!', 5000);
 
     //char *ptr2 = (char *)addr2 + sizeof(Chunk_Header);
     char *ptr2 = (char *)addr2;
-    memset(ptr2, '!', 5000);
+    strcpy(ptr2, "Hello world!\n");
     //strcpy(ptr2, "This is Not a Drill!!!\n");
    
     printf("ptr1 string: %s", ptr1);
@@ -215,8 +215,8 @@ int main(void)
  
 
 
-    my_free(ptr2);
     my_free(ptr1);
+    my_free(ptr2);
    
     printf("ptr2 after free: %s", ptr2);
     printf("ptr2 string pointer address: %p\n", ptr2 - sizeof(Chunk_Header));
