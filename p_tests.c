@@ -153,7 +153,7 @@ int main(void)
 
     printf("TABLES:\n");
     //Arena_List_Node *test = my_malloc(62 * sizeof(char));
-    Arena_List_Node *test = my_malloc(100 * sizeof(char));
+    Arena_List_Node *test = my_malloc(10000 * sizeof(char));
     if (!test)
     {
         printf("Error allocating memory.\n");

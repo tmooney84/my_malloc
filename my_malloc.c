@@ -246,7 +246,7 @@ char *large_allocation(size_t m_size, Arena_List_Node *node){
 
     Chunk_Header *chunk_header = (Chunk_Header *)node->chunks_start_addr;
     chunk_header->flags = IN_USE;
-    chunk_header->size = m_size + sizeof(Chunk_Header);
+    chunk_header->size = m_size;
     chunk_header->prev_size = chunk_header->size;
     my_malloc_ptr = (char *)chunk_header + sizeof(Chunk_Header);
 
@@ -316,8 +316,8 @@ Arena_List_Node *create_custom_arena_list_node(size_t size)
     Chunk_Header *header = (Chunk_Header *)node->chunks_start_addr;
     header->assoc_rb_node = (void *)&node->arena.node_pool[0];
     header->flags = NA;
-    header->size = size;
-    header->prev_size = size;
+    header->size = 0;
+    header->prev_size = 0;
 
     return node;
 }
