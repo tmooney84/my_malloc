@@ -157,12 +157,38 @@ char *alloc_chunk_size(Arena_List_Node *node, size_t chunk_size_idx){
     RB_Node *itr = root;
     size_t chunk_size = rb_node_size[chunk_size_idx];
     size_t num_possible_chunks = 0;
-    
+   
+    //---do I need this? for the Linked List version or RB Version???
     for(size_t i = chunk_size_idx; i < NODE_TABLE_SIZE-1; i++){
         num_possible_chunks += rb_node_table[i];
     }
 
     size_t counter = 0;
+/*
+   **********COULD POTENTIALLY USE rb_idx_table IDX********
+   fast_forward type function
+   maybe comment out above logic for RB version
+   and instead use chunk_size_idx to go to the spot in node_pool
+   and then from there go in order until
+    i == 193 or (parent != NULL or right != NULL) meaning this is
+    an RB_Node that has been yet to be allocated and then use that
+    node
+
+    **********LEFT OFF HERE*********** As of now the malloc of 
+    p1 100, p2 100, p3 30, p4 30 and then freeing p1, p2, p3
+    and then mallocing p5 100 in the same arena b4 freeing p4
+    then freeing p5
+
+    The same issue as line 603 in my_free() seems to be coming up
+    where I need to iterate through the node-pool going sequentially
+    using pointer arithmetic... need to test and be careful of off
+    by one errors... may need to copy the my_free logic???
+
+
+    THEN ONCE SOLVED NEED TO TEST 3 large allocs and freeing middle 
+    one first
+*/
+
 
     while(itr != NULL && counter < num_possible_chunks){
        if(itr->size >= chunk_size){
@@ -583,11 +609,31 @@ void my_free(void *ptr)
         }
 //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!DOES THE CURRENT_SIZE WORK FOR UNMAPPING LARGE ALLOC CHUNK AND MEMSET OVERWRITE THINGS?
         //fast forward to matching node size
-        while(itr->right != NULL && itr->size != freed_node_size && counter < rb_node_table[NODE_TABLE_SIZE - 1] - 1){
-                itr = itr->right; 
+        // while(itr->right != NULL && itr->size != freed_node_size && counter < rb_node_table[NODE_TABLE_SIZE - 1] - 1){
+        //         itr = itr->right; 
+        //         counter++;
+        //     }
+
+
+        while(itr->size != freed_node_size && counter < rb_node_table[NODE_TABLE_SIZE - 1] - 1){
                 counter++;
+                char *temp = (char *)itr + sizeof(RB_Node); 
+                itr = (RB_Node *)temp;
+
+                if(itr->parent == NULL && itr->right == NULL && counter < rb_node_table[NODE_TABLE_SIZE - 1] - 1){
+                    counter++;
+                    temp = (char *) itr + sizeof(RB_Node);
+                    itr = (RB_Node *)temp;
+                }
             }
-                
+            //move forward one more node if not the end of the list and parent + right are NULL
+            //if(counter < rb_node_table[NODE_TABLE_SIZE - 1] - 1)
+            if(itr->parent == NULL && itr->right == NULL && counter < rb_node_table[NODE_TABLE_SIZE - 1] - 1){
+                char *temp = (char *)itr + sizeof(RB_Node); 
+                itr = (RB_Node *)temp;
+            }
+
+
             
         //if at end
         if(itr->right == NULL && itr->size < freed_node_size){
