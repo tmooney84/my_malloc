@@ -416,8 +416,8 @@ Arena_List_Node *create_custom_arena_list_node(size_t size)
     return node;
 }
 
-//!!!void *my_malloc(size_t m_size)
-Arena_List_Node *my_malloc(size_t m_size)
+void *my_malloc(size_t m_size)
+//!!!Arena_List_Node *my_malloc(size_t m_size)
 {
     void *my_malloc_ptr = NULL;
 
@@ -455,8 +455,8 @@ Arena_List_Node *my_malloc(size_t m_size)
         // TESTING:
         // printf("arena_list_start = %p\n", arena_list_start);    //!!!!!!!!!!!!!!!!
         printf("POINTER ADDR no arena and small @@@@@@@@@@@@@@@@@@@@@ %p\n", my_malloc_ptr);
-        //!!!return my_malloc_ptr;
-        return head;
+        return my_malloc_ptr;
+        //!!!return head;
     }
 
     // 1.2) NO ARENA AND BIG
@@ -474,8 +474,8 @@ Arena_List_Node *my_malloc(size_t m_size)
         }
 
         printf("POINTER ADDR no arena and big @@@@@@@@@@@@@@@@@@@@@ %p\n", my_malloc_ptr);
-        //!!!return my_malloc_ptr;
-        return head;
+        return my_malloc_ptr;
+        ///!!return head;
     }
 
     // 2) ARENA LIST EXISTS
@@ -526,8 +526,8 @@ Arena_List_Node *my_malloc(size_t m_size)
         my_malloc_ptr = alloc_arena_chunk(m_size, itr->next);
 
         printf("POINTER ADDR arena and small @@@@@@@@@@@@@@@@@@@@@ %p\n", my_malloc_ptr);
-        //!!!return my_malloc_ptr;
-        return itr->next;
+        return my_malloc_ptr;
+        //!!!return itr->next;
     }
 
     // 2.2 ARENA LIST EXISTS and LARGE
@@ -543,10 +543,10 @@ Arena_List_Node *my_malloc(size_t m_size)
         // add to arena list
         itr->next = node;
         node->prev = itr;
-        //!!!return my_malloc_ptr;
 
         printf("POINTER ADDR arena exists and big @@@@@@@@@@@@@@@@@@@@@ %p\n", my_malloc_ptr);
-        return node;
+        return my_malloc_ptr;
+        //!!!return node;
     }
 
     ///!!!return my_malloc_ptr;
@@ -796,16 +796,16 @@ void my_free(void *ptr)
 //    }
 
 // my_calloc >>> READY TO DEBUG
-//   void *my_calloc(size_t nmemb, size_t size)
-//  {
-// if(nmemb == 0 || size == NULL){
-// return NULL;
-//}
-// size_t m_size = nmemb * size;
-// char *ptr = (char *)my_malloc(m_size);
-// memset(ptr, 0, m_size);
-// return (void *)ptr;
-//}
+void *my_calloc(size_t nmemb, size_t size)
+ {
+    if(nmemb == 0 || size == 0){
+        return NULL;
+    }
+    size_t m_size = nmemb * size;
+    char *ptr = (char *)my_malloc(m_size);
+    memset(ptr, 0, m_size);
+    return (void *)ptr;
+}
 
 /*
         //calloc(# of elements, sizeof(data))
