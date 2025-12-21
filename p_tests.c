@@ -353,7 +353,9 @@ int main(void)
     printf("ptr5 string pointer address: %p\n", ptr5);
     
    
+    fflush(stdout);  
 
+    freopen("logs.txt", "a", stdout);
 
 
     my_free(ptr4);

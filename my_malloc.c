@@ -662,7 +662,7 @@ void my_free(void *ptr)
 
     //!!!!!!!!!!!!!!!!!!!!!!START LINKED LIST VERSION!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     // add curr_node back in to linked list
-    RB_Node *head = (RB_Node *)curr_node->arena.arena_header.rb_node_pool;
+    RB_Node *head = (RB_Node *)curr_node->arena.arena_header.free_tree.root;
     RB_Node *itr = head;
 
     size_t counter = 0;
