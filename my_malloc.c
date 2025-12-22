@@ -823,39 +823,38 @@ void *my_calloc(size_t nmemb, size_t size)
 */
 
 // my_realloc >>>READY TO DEBUG
-// void *my_realloc(void *ptr, size_t size){
-//     Chunk_Header *ptr_chunk = (Chunk_Header *)(ptr - sizeof(Chunk_Header));
+void *my_realloc(void *ptr, size_t size){
+    Chunk_Header *ptr_chunk = (Chunk_Header *)(ptr - sizeof(Chunk_Header));
 
-//     if(ptr == NULL && size == 0){
-//         return NULL;
-//     }
-//     else if (ptr == NULL && size != 0){
-//         ptr = my_malloc(size);
-//         return ptr;
-//     }
-//     else if(ptr && size == 0){
-//         my_free(ptr);
-//         return NULL;
-//     }
-//     else if(ptr && size <= ptr_chunk->size){
-//         //keep same chunk
-//         return ptr;
-//     }
-//     else if(ptr && size > ptr_chunk->size){
-//         void *new_ptr = my_malloc(size);
-//         memcpy(new_ptr, ptr, ptr_chunk->size);
-//         my_free(ptr);
-//         return new_ptr;
-//     }
-//     else if(size < 0){
-//         perror("Invalid realloc size\n");
-//         return NULL;
-//     }
-//     else{
-//         perror("Unable to reallocate\n");
-//     }
-//     return NULL;
-// }
+    if(ptr == NULL && size == 0){
+        return NULL;
+    }
+    else if (ptr == NULL && size != 0){
+        ptr = my_malloc(size);
+        return ptr;
+    }
+    else if(ptr && size == 0){
+        my_free(ptr);
+        return NULL;
+    }
+    else if(ptr && size <= ptr_chunk->size){
+        //keep same chunk
+        return ptr;
+    }
+    else if(ptr && size > ptr_chunk->size){
+        void *new_ptr = my_malloc(size);
+        memcpy(new_ptr, ptr, ptr_chunk->size);
+        my_free(ptr);
+        return new_ptr;
+    }
+    else{
+        perror("Unable to reallocate\n");
+    }
+    return NULL;
+}
+
+
+
 
 //    {
 /*

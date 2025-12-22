@@ -148,11 +148,21 @@ void print_hex(const void *data, size_t len) {
     return;
 }
 
-//my_calloc TESTING
+//--------my_calloc TESTING------------//
 
+// int main(void){
+//     build_rb_idx_table();
+//     char *ptr1 = my_calloc(32, sizeof(char));
+//     print_hex(ptr1, 32);
+//     printf("ptr1 string pointer address: %p\n", ptr1);
+
+//     my_free(ptr1);
+
+//     return 0;
+// }
+
+//--------my_realloc TESTING------------//
 int main(void){
-    build_rb_idx_table();
-
     // FILE *log = freopen("logs.txt", "w", stdout);
     // if(!log){
     //     perror("freopen");
@@ -200,10 +210,24 @@ int main(void){
     //print_hex(ptr1, 32);
     //printf("ptr1 string pointer address: %p\n", ptr1);
 
-    char *ptr1 = my_calloc(32, sizeof(char));
-    print_hex(ptr1, 32);
+    char *ptr1 = my_malloc(32 * sizeof(char));
+    print_hex(ptr1, 32 * sizeof(char));
     printf("ptr1 string pointer address: %p\n", ptr1);
 
+    strcpy(ptr1, "Hello world!\n");
+
+    printf("ptr1 string b4 realloc: %s\n", ptr1);
+    char *orig = ptr1;
+    ptr1 = my_realloc(ptr1, 32);
+    printf("ptr1 string pointer address: %p\n", ptr1);
+    printf("ptr1 string after realloc(32): %s\n", ptr1);
+
+    ptr1 = my_realloc(ptr1, 64); 
+    printf("ptr1 string pointer address: %p\n", ptr1);
+    printf("ptr1 string after realloc(64): %s\n", ptr1);
+    printf("orig pointer address after realloc(64): %p\n", orig);
+    printf("orig string: %s\n", orig);
+    
     my_free(ptr1);
 
     return 0;
