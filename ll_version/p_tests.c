@@ -137,15 +137,15 @@ void print_arena_node_info(Arena_List_Node *node)
         }
 }
 
-void print_hex(const void *data, size_t len) {
-    const unsigned char *p = data;
+// void print_hex(const void *data, size_t len) {
+//     const unsigned char *p = data;
 
-    for (size_t i = 0; i < len; i++) {
-        printf("%02X ", p[i]);
-    }
-    putchar('\n');
-    return;
-}
+//     for (size_t i = 0; i < len; i++) {
+//         printf("%02X ", p[i]);
+//     }
+//     putchar('\n');
+//     return;
+// }
 
 //--------my_calloc TESTING------------//
 

@@ -36,6 +36,11 @@ make
 #include "my_malloc.h"
 ```
 
+5) Run my_malloc executable file to seem demonstration:
+```
+./my_malloc
+```
+
 
 ## Usage
 
