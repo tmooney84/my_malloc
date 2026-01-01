@@ -1,6 +1,7 @@
 # Compiler
 CC      := gcc
 CFLAGS  := -Wall -Wextra -Werror -g -D_POSIX_C_SOURCE=200809L
+CFLAGS += -D_GNU_SOURCE
 
 # Target executable name
 ##TARGET  := ptests
