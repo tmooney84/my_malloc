@@ -4,7 +4,6 @@
 #include <stdbool.h>
 #include <inttypes.h>
 
-#include "arena.h"
 #include "my_malloc.h"
 
 #define NODE_TABLE_SIZE 8

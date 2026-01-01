@@ -8,15 +8,6 @@
 #include "arena.h"
 #include "bitwise_helpers.h"
 
-/*
-       The malloc() function allocates size bytes and returns a pointer
-       to the allocated memory.  The memory is not initialized.  If size
-       is 0, then malloc() returns a unique pointer value that can later
-       be successfully passed to free().
-
-    !!! On error, these functions return NULL and set errno. (malloc, realloc, calloc)
-*/
-
 static void *arena_list_start = NULL;
 
 uint32_t rb_idx_table[NODE_TABLE_SIZE] = {0};
@@ -61,7 +52,6 @@ void set_default_arena_header(Arena_List_Node *node)
     return;
 }
 
-//!!!!!!!!!!!!!LEFT OFF HERE GET_RB_NODE_SIZE SHOULD BE FIXED NOW!!!!!!!!!
 void build_default_rb_node_pool(Arena_List_Node *node)
 {
     RB_Node *pool = node->arena.node_pool;
@@ -101,10 +91,6 @@ void build_default_chunks_area(Arena_List_Node *node)
 }
 
 //==========================START OF RB TREE /LINKED LIST OPERATIONS=====================//
-
-// LINKED LIST VERSION!!!// ...Need traversal, add, delete functionality
-// In this version, just need to have the right pointers of each RB_Node
-// connect to the next until the end
 RB_Node *build_free_tree(Arena_List_Node *al_node)
 {
     RB_Node *head = &al_node->arena.node_pool[0];
@@ -156,45 +142,15 @@ void update_table_with_idx(Arena_List_Node *node, size_t chunk_size_idx, Chunk_O
 
 char *alloc_chunk_size(Arena_List_Node *node, size_t chunk_size_idx)
 {
-    // traverse linked list... may not be the most efficient for ll, but ok
     char *my_malloc_ptr = NULL;
 
-    //   RB_Node *root = node->arena.arena_header.free_tree.root;
-    // RB_Node *itr = root;
     size_t chunk_size = rb_node_size[chunk_size_idx];
     size_t num_possible_chunks = 0;
 
-    //---do I need this? for the Linked List version or RB Version???
     for (size_t i = chunk_size_idx; i < NODE_TABLE_SIZE - 1; i++)
     {
         num_possible_chunks += rb_node_table[i];
     }
-
-    //    size_t counter = 0;
-    /*
-       **********COULD POTENTIALLY USE rb_idx_table IDX********
-       fast_forward type function
-       maybe comment out above logic for RB version
-       and instead use chunk_size_idx to go to the spot in node_pool
-       and then from there go in order until
-        i == 193 or (parent != NULL or right != NULL) meaning this is
-        an RB_Node that has been yet to be allocated and then use that
-        node
-
-        **********LEFT OFF HERE*********** As of now the malloc of
-        p1 100, p2 100, p3 30, p4 30 and then freeing p1, p2, p3
-        and then mallocing p5 100 in the same arena b4 freeing p4
-        then freeing p5
-
-        The same issue as line 603 in my_free() seems to be coming up
-        where I need to iterate through the node-pool going sequentially
-        using pointer arithmetic... need to test and be careful of off
-        by one errors... may need to copy the my_free logic???
-
-
-        THEN ONCE SOLVED NEED TO TEST 3 large allocs and freeing middle
-        one first
-    */
 
     size_t start_idx = node->arena.arena_header.node_table.rb_node_used[chunk_size_idx];
 
@@ -255,61 +211,6 @@ char *alloc_chunk_size(Arena_List_Node *node, size_t chunk_size_idx)
     }
     return my_malloc_ptr;
 }
-/*
-    while(itr != NULL && counter < num_possible_chunks){
-       if(itr->size >= chunk_size){
-            Chunk_Header *ch = itr->assoc_c_h_addr;
-
-            //if chunk found... set RB_Node addr, update table
-            if(ch->flags == FREE){
-                my_malloc_ptr = (char *)ch + sizeof(Chunk_Header);
-
-                //Chunk_Header
-                ch->flags = IN_USE;
-
-                //remove node from ll
-                RB_Node *prev = itr->parent;
-
-                //RB_TREE >>> allocating first node... need to reset head
-                //if first, reset free_tree.root
-                if(prev == NULL){
-                    node->arena.arena_header.free_tree.root = itr->right;
-                    itr->right->parent = NULL;
-                }
-
-                //if in list and not last entry of node_pool for current arena
-                else if(itr->right != NULL){
-                    prev->right = itr->right;
-                    itr->right->parent = prev;
-                }
-
-                else{
-                    prev->right = NULL;
-                }
-
-
-                //RB_NODE null out right (and left) to more easily track
-                itr->left = NULL;
-                itr->right = NULL;
-                itr->parent = NULL;
-                //change color in RB Version
-
-                //check chunk size index for table update
-                int32_t used_chunk_size_idx = chunk_size_index(ch->size);
-
-                //TABLE UPDATE
-                update_table_with_idx(node, used_chunk_size_idx, ADD_TO_TABLE);
-
-                break;
-            }
-            counter++;
-        }
-        itr = itr->right;
-   }
-
-   return my_malloc_ptr;
-}
-*/
 
 char *alloc_arena_chunk(size_t m_size, Arena_List_Node *node)
 {
@@ -347,8 +248,8 @@ char *large_allocation(size_t m_size, Arena_List_Node *node)
 
     return my_malloc_ptr;
 }
-
 //==========================END OF RB TREE /LINKED LIST OPERATIONS=====================//
+
 void build_arena(Arena_List_Node *node)
 {
     node->chunks_start_addr = (char *)node + sizeof(Arena_List_Node);
@@ -357,10 +258,7 @@ void build_arena(Arena_List_Node *node)
     build_default_rb_node_pool(node);
     build_default_chunks_area(node);
 
-    // build_free_tree() >>> return root// head for linked list
     node->arena.arena_header.free_tree.root = build_free_tree(node);
-
-    // rb_tree >>> after building free tree, set node->arena.rb_tree = rb root node!!!
 
     return;
 }
@@ -371,10 +269,8 @@ Arena_List_Node *create_default_arena_list_node()
 
     void *mmap_region = mmap(0, BASE_ARENA_SIZE, PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE, -1, 0);
     node = (Arena_List_Node *)mmap_region;
-    // build arena
     build_arena(node);
 
-    // linked list pointers
     node->next = NULL;
     node->prev = NULL;
     return node;
@@ -384,10 +280,8 @@ Arena_List_Node *create_custom_arena_list_node(size_t size)
 {
     Arena_List_Node *node = NULL;
 
-    // not sure why there is a segfault without an extra ~5000 bytes
     size_t m_size = (size + sizeof(Chunk_Header) + 1 * sizeof(Arena_List_Node) + 5000);
 
-    // needs to have mmap of size + custom info? 1.15 * size or more exact???
     void *mmap_region = mmap(0, m_size, PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE, -1, 0);
     node = (Arena_List_Node *)mmap_region;
     node->next = NULL;
@@ -432,9 +326,8 @@ void *my_malloc(size_t m_size)
     // 0) m_size 0 does what???
     if (m_size == 0)
     {
-        // pass pointer that can be passed to free thus smallest possible allocation
-        // return my_malloc_ptr ???
-        return NULL; //???
+        // return my_malloc_ptr
+        return NULL;
     }
 
     // 1) NO ARENA, CREATE/MMAP ARENA
@@ -452,9 +345,6 @@ void *my_malloc(size_t m_size)
             return NULL;
         }
 
-        // TESTING:
-        // printf("arena_list_start = %p\n", arena_list_start);    //!!!!!!!!!!!!!!!!
-        printf("POINTER ADDR no arena and small @@@@@@@@@@@@@@@@@@@@@ %p\n", my_malloc_ptr);
         return my_malloc_ptr;
         //!!!return head;
     }
@@ -473,7 +363,6 @@ void *my_malloc(size_t m_size)
             return NULL;
         }
 
-        printf("POINTER ADDR no arena and big @@@@@@@@@@@@@@@@@@@@@ %p\n", my_malloc_ptr);
         return my_malloc_ptr;
         ///!!return head;
     }
@@ -484,8 +373,6 @@ void *my_malloc(size_t m_size)
     if (arena_list_start && m_size <= MAX_SIZE)
     {
         Arena_List_Node *itr = (Arena_List_Node *)arena_list_start;
-        // Arena_List_Node *curr;
-        // bool alloc_success = false;
 
         // iterate through arena list
         while (itr != NULL)
@@ -558,12 +445,8 @@ void *my_malloc(size_t m_size)
 
     ///!!!return my_malloc_ptr;
 
-    return NULL; //!!!!
+    return NULL; 
 }
-
-// The free() function frees the memory space pointed to by ptr, which must have been returned by a
-// previous call to malloc(), calloc() or realloc(). Otherwise, or if free(ptr) has already been called
-// before, undefined behavior occurs. If ptr is NULL, no operation is performed
 
 bool check_zero_used(Arena_List_Node *node)
 {
@@ -639,15 +522,12 @@ void unmap_arena_list_node(Arena_List_Node *curr_node)
     return;
 }
 
-//---------------TODO: Need to memset() the returned memory to zero!!!------------
 void my_free(void *ptr)
 {
     if (ptr == NULL)
     {
         return;
     }
-
-    // 1) need to go to the malloc'd ptr then - sizeof(Chunk_Header)
 
     // update Chunk_Header
     Chunk_Header *curr_head = (Chunk_Header *)(ptr - sizeof(Chunk_Header));
@@ -667,7 +547,6 @@ void my_free(void *ptr)
     char *curr_node_ptr = rb_ptr - curr_rb_node_offset - offsetof(Arena, node_pool[0]) - offsetof(Arena_List_Node, arena);
     Arena_List_Node *curr_node = (Arena_List_Node *)curr_node_ptr;
 
-    //!!!!!!!!!!!!!!!!!!!!!!START LINKED LIST VERSION!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     // add curr_node back in to linked list
     RB_Node *head = (RB_Node *)curr_node->arena.arena_header.free_tree.root;
     RB_Node *itr = head;
@@ -700,12 +579,6 @@ void my_free(void *ptr)
 
         return;
     }
-    //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!DOES THE CURRENT_SIZE WORK FOR UNMAPPING LARGE ALLOC CHUNK AND MEMSET OVERWRITE THINGS?
-    // fast forward to matching node size
-    //  while(itr->right != NULL && itr->size != freed_node_size && counter < rb_node_table[NODE_TABLE_SIZE - 1] - 1){
-    //          itr = itr->right;
-    //          counter++;
-    //      }
 
     while (itr->size != freed_node_size && counter < rb_node_table[NODE_TABLE_SIZE - 1] - 1)
     {
@@ -767,42 +640,11 @@ void my_free(void *ptr)
 
         return;
     }
-    //!!!!!!!!!!!!end LINKED LIST VERSION!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     perror("Unable to free memory\n");
 
     return;
 }
 
-/*
-
-        //need to add back into list for right and parent
-
-
-
-        2) then cast address to (Chunk Header)... update header
-        3) jump to rb node, update that too
-        4) update used_table
-        5) then check the used_table[NODE_TABLE_SIZE - 1] == 0
-                if used_table[NODE_TABLE_SIZE - 1] < 0 RETURN ERROR
-                if so then can then can unmap memory of the current ARENA_LIST_NODE
-                and update arena_list_start LIST... so delete node in middle end or beginning
-                    which sets arena_list_start == NULL;
-
-
-
-
-
-            // 1)  update the pointer table
-            //         IF number of current allocs == 0
-            //             UNMAP THE ARENA and DELETE from Linked List
-            //         ELSE IF the pointer table has additional allocs:
-            //             look at chunk size and add freed block to R-B Tree and update table (MUTEX'D???)
-            //         ELSE IF current allocs < 0
-            //             RETURN ERROR
-        */
-//    }
-
-// my_calloc >>> READY TO DEBUG
 void *my_calloc(size_t nmemb, size_t size)
  {
     if(nmemb == 0 || size == 0){
@@ -814,22 +656,6 @@ void *my_calloc(size_t nmemb, size_t size)
     return (void *)ptr;
 }
 
-/*
-        //calloc(# of elements, sizeof(data))
-        1) MY_MALLOC and return the pointer
-        2) Use that pointer and write over the memory with 0
-        3) return the pointer to calling function
-
-        // basically malloc and then zero out the memory... it may be worth carrying a flag
-        // so that the my_malloc knows to zero out the memory
- //   }
-    // The calloc() function allocates memory for an array of nmemb elements of size
-    // bytes each and returns a pointer to the allocated memory. The memory is set to zero.
-    // If nmemb or size is 0, then calloc() returns either NULL,
-    // or a unique pointer value that can later be successfully passed to free().
-*/
-
-// my_realloc >>>READY TO DEBUG
 void *my_realloc(void *ptr, size_t size){
     Chunk_Header *ptr_chunk = (Chunk_Header *)(ptr - sizeof(Chunk_Header));
 
@@ -859,46 +685,3 @@ void *my_realloc(void *ptr, size_t size){
     }
     return NULL;
 }
-
-
-
-
-//    {
-/*
-IF ptr == NULL:
-    RETURN regular MY_MALLOC(size)
-IF size == 0:
-    my_free(ptr);
-ELSE IF size > 0:
-    IF size < BUCKET SIZE - Stuff:
-        RETURN ptr (don't need to initialize the new stuff)
-    ELSE IF size >= BUCKET SIZE - Stuff:
-        MY_MALLOC of the next sized bucket
-        COPY the malloc'd info contained into the new bucket
-        FREE the OLD BUCKET
-ELSE IF size < 0:
-    return NULL && set errno
-
-*/
-//    }
-/*
-The realloc() function changes the size of the memory block pointed to by ptr to size bytes.
-The contents will be unchanged in the range from the start of the region up to the minimum of
-the old and new sizes. If the new size is larger than the old size, the added memory will not
-be initialized. If ptr is NULL, then the call is equivalent to malloc(size), for all values of size;
-if size is equal to zero, and ptr is not NULL, then the call is equivalent to free(ptr).
-Unless ptr is NULL, it must have been returned by an earlier call to malloc(), calloc() or realloc().
-If the area pointed to was moved, a free(ptr) is done.
-*/
-
-// int main(void)
-// {
-//     char *test = my_malloc(20 * sizeof(char));
-//     if(!test){
-//         printf("Error allocating memory.\n");
-//     }
-
-//     printf("test string: %s", test);
-//     printf("test string pointer address: %p", test);
-//     return 0;
-// }

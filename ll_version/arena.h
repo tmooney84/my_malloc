@@ -33,12 +33,6 @@ typedef enum{
     DELETE_FROM_TABLE = 1,
 }Chunk_Op;
 
-// static const char *ColorNames[] = {
-//     "NO_COLOR",
-//     "RED",
-//     "BLACK",
-// };
-
 typedef struct __attribute__((aligned(16))) Chunk_Header{
     void *assoc_rb_node;
     size_t size; //full chunk size including header
@@ -75,12 +69,6 @@ typedef struct __attribute__((aligned(16))) Arena_Header{
     //pthread_mutex_t lock; if wanted multithread-safe
     //size_t used_bytes
 }Arena_Header;
-
-// //!!! is this necessary?
-// typedef struct Chunk{
-//     Chunk_Header chunk_header;
-//     //data stored after header;
-// }Chunk;
 
 typedef struct __attribute__((aligned(16))) Arena{
     Arena_Header arena_header;
