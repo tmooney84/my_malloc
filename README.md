@@ -2,19 +2,51 @@
 ***
 
 ## Task
-TODO - What is the problem? And where is the challenge?
+Red + Black Tree and Linked List Implementations of custom C memory allocator that uses memory mapping to obtain heap memory for the allocations. 
 
 ## Description
-TODO - How have you solved the problem?
+This memory allocator has been implemented using a linked list of 64kb arenas and custom-sized arenas for allocations of greater than 2048 bytes dependent on the program allocation requirements. Within the default arenas, a pre-set pool of 32 byte, 64 byte, 128 byte, 256 byte, 512 byte, 1024 byte and 2048 byte memory chunks along with necessary metadata are stored in order to manage allocations. The free and in-use nodes are tracked through the node_pool metadata using a linked list or red-black tree structure depending on which implementation that you choose. 
+
+![alt text for screen readers](/memory_alloc.jpg)
 
 ## Installation
-TODO - How to install your project? npm install? make? make re?
+
+1) Download repository:
+
+```bash
+git clone git@github.com:tmooney84/my_malloc.git
+```
+
+2) Navigate to linked list or red-black tree version of the library
+```
+cd ll_version
+
+-or-
+
+cd rb_version
+```
+
+3) Compile Code
+```
+make
+```
+
+4) Include my_malloc.h in pre-processor directive
+```
+#include "my_malloc.h"
+```
+
 
 ## Usage
-TODO - How does it work?
-```
-./my_project argument1 argument2
-```
+
+void *my_malloc(size_t m_size) >>> can be used in place of a standard implementation of malloc()
+
+void my_free(void *ptr) >>> can be used along side my_malloc() in place of free()
+
+void *my_calloc(size_t nmemb, size_t size) >>> can be used alongside my_malloc() in place of calloc()
+
+void *my_realloc(void *ptr, size_t size) >>> can be used alongside my_malloc() in place of my_realloc()
+
 
 ### The Core Team
 
