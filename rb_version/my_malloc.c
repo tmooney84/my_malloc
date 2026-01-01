@@ -200,7 +200,7 @@ Arena_List_Node *create_default_arena_list_node()
 {
     Arena_List_Node *node = NULL;
 
-    void *mmap_region = mmap(0, BASE_ARENA_SIZE, PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE, -1, 0);
+    void *mmap_region = mmap(0, BASE_ARENA_SIZE, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
     node = (Arena_List_Node *)mmap_region;
     // build arena
     build_arena(node);
@@ -219,7 +219,7 @@ Arena_List_Node *create_custom_arena_list_node(size_t size)
     size_t m_size = (size + sizeof(Chunk_Header) + 1 * sizeof(Arena_List_Node) + 5000);
 
     // needs to have mmap of size + custom info? 1.15 * size or more exact???
-    void *mmap_region = mmap(0, m_size, PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE, -1, 0);
+    void *mmap_region = mmap(0, m_size, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
     node = (Arena_List_Node *)mmap_region;
     node->next = NULL;
     node->prev = NULL;
