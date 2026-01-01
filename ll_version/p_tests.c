@@ -161,7 +161,7 @@ void print_hex(const void *data, size_t len) {
 // }
 
 //--------my_realloc TESTING------------//
-int main(void){
+/*int main(void){
     // FILE *log = freopen("logs.txt", "w", stdout);
     // if(!log){
     //     perror("freopen");
@@ -231,7 +231,7 @@ int main(void){
 
     return 0;
 }
-
+*/
 
 
 //-------------------ARENA TESTING(my_malloc and my_free)---------------------------------//

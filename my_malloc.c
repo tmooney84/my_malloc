@@ -14,6 +14,16 @@ static void *arena_list_start = NULL;
 
 uint32_t rb_idx_table[NODE_TABLE_SIZE] = {0};
 
+void print_hex(const void *data, size_t len) {
+    const unsigned char *p = data;
+
+    for (size_t i = 0; i < len; i++) {
+        printf("%02X ", p[i]);
+    }
+    putchar('\n');
+    return;
+}
+
 int build_rb_idx_table()
 {
     int idx = -1;
@@ -317,11 +327,12 @@ void *my_malloc(size_t m_size)
                 {
                     return my_malloc_ptr;
                 }
-                if(my_malloc_ptr == NULL && itr->next)
+                if (my_malloc_ptr == NULL && itr->next)
                 {
                     itr = itr->next;
                 }
-                else if(my_malloc_ptr == NULL && itr->next == NULL){
+                else if (my_malloc_ptr == NULL && itr->next == NULL)
+                {
                     break;
                 }
             }
@@ -534,4 +545,29 @@ void *my_realloc(void *ptr, size_t size)
         perror("Unable to reallocate\n");
     }
     return NULL;
+}
+
+int main(void)
+{
+    char *ptr1 = my_malloc(32 * sizeof(char));
+    print_hex(ptr1, 32 * sizeof(char));
+    printf("ptr1 string pointer address: %p\n", ptr1);
+
+    strcpy(ptr1, "Hello world!\n");
+
+    printf("ptr1 string b4 realloc: %s\n", ptr1);
+    char *orig = ptr1;
+    ptr1 = my_realloc(ptr1, 32);
+    printf("ptr1 string pointer address: %p\n", ptr1);
+    printf("ptr1 string after realloc(32): %s\n", ptr1);
+
+    ptr1 = my_realloc(ptr1, 64);
+    printf("ptr1 string pointer address: %p\n", ptr1);
+    printf("ptr1 string after realloc(64): %s\n", ptr1);
+    printf("orig pointer address after realloc(64): %p\n", orig);
+    printf("orig string: %s\n", orig);
+
+    my_free(ptr1);
+
+    return 0;
 }

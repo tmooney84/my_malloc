@@ -3,10 +3,12 @@ CC      := gcc
 CFLAGS  := -Wall -Wextra -Werror -g -D_POSIX_C_SOURCE=200809L
 
 # Target executable name
-TARGET  := ptests
+## TARGET  := ptests
+TARGET  := my_malloc
 
 # Source and object files
-SRC     := p_tests.c my_malloc.c bitwise_helpers.c RedBlackTree.c 
+##SRC     := p_tests.c my_malloc.c bitwise_helpers.c RedBlackTree.c 
+SRC     := my_malloc.c bitwise_helpers.c RedBlackTree.c
 OBJ     := $(SRC:.c=.o)
 
 # Headers
