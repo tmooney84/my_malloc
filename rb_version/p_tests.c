@@ -6,6 +6,7 @@
 
 #include "arena.h"
 #include "my_malloc.h"
+#include "RedBlackTree.h"
 
 #define NODE_TABLE_SIZE 8
 #define BASE_ARENA_SIZE 65536
@@ -161,7 +162,12 @@ void print_hex(const void *data, size_t len) {
 //     return 0;
 // }
 
+
+
+
 //--------my_realloc TESTING------------//
+
+/*
 int main(void){
     // FILE *log = freopen("logs.txt", "w", stdout);
     // if(!log){
@@ -232,301 +238,316 @@ int main(void){
 
     return 0;
 }
+*/
 
-
-
+/*
 //-------------------ARENA TESTING(my_malloc and my_free)---------------------------------//
-// int main(void)
-// {
-//     build_rb_idx_table();
+int main(void)
+{
+    build_rb_idx_table();
 
-//     FILE *log = freopen("logs.txt", "w", stdout);
-//     if(!log){
-//         perror("freopen");
-//         return 1;
-//     }
+    FILE *log = freopen("logs.txt", "w", stdout);
+    if(!log){
+        perror("freopen");
+        return 1;
+    }
 
-//     //writes the buffer at runtime
-//     setvbuf(stdout, NULL, _IOLBF, 0);
+    //writes the buffer at runtime
+    setvbuf(stdout, NULL, _IOLBF, 0);
 
-//     printf("TABLES:\n");
-//     //Arena_List_Node *test = my_malloc(62 * sizeof(char));
-//     Arena_List_Node *test = my_malloc(100 * sizeof(char));
-//     if (!test)
-//     {
-//         printf("Error allocating memory.\n");
-//     }
+    printf("TABLES:\n");
+    //Arena_List_Node *test = my_malloc(62 * sizeof(char));
+    Arena_List_Node *test = my_malloc(100 * sizeof(char));
+    if (!test)
+    {
+        printf("Error allocating memory.\n");
+    }
 
-//     my_malloc(100 * sizeof(char));
+    my_malloc(100 * sizeof(char));
 
-//     my_malloc(30 * sizeof(char));
-//     my_malloc(30 * sizeof(char));
+    my_malloc(30 * sizeof(char));
+    my_malloc(30 * sizeof(char));
 
-//     //my_malloc(5000 * sizeof(char));
-//     //my_malloc(5000 * sizeof(char));
+    //my_malloc(5000 * sizeof(char));
+    //my_malloc(5000 * sizeof(char));
 
-//     // for(int i = 0; i < 20; i++){
-//     //     my_malloc(999 * sizeof(char));
-//     // }
-//         //my_malloc(999 * sizeof(char));
+    // for(int i = 0; i < 12; i++){
+    //     my_malloc(999 * sizeof(char));
+    // }
+
+    rbt_print(&test->arena.arena_header.free_tree);
+    // for(int i = 0; i < 8; i++){
+    //     my_malloc(999 * sizeof(char));
+    // }
+
+    printf("+++++++++++++++++++++++++++++++++++++++\n");
+    printf("+++++++++++++++++++++++++++++++++++++++\n");
+    // rbt_print(&test->arena.arena_header.free_tree);
+        
+    // my_malloc(999 * sizeof(char));
     
 
-//     printf("test Arena_List_Node starts at: %p\n", test);
+    printf("test Arena_List_Node starts at: %p\n", test);
 
-//     print_tables(test);
-//     printf("---------------------------------------------------");
-//     printf("ARENA NODE INFO:\n");
-//     print_arena_node_info(test);
+    print_tables(test);
+    printf("---------------------------------------------------");
+    printf("ARENA NODE INFO:\n");
+    print_arena_node_info(test);
     
-//     // printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-//     // printf("!!!!!!!!!TEST->NEXT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-//     // printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-//     // printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-//     // print_tables(test->next);
-//     // printf("---------------------------------------------------");
-//     // printf("ARENA NODE INFO:\n");
-//     // print_arena_node_info(test->next);
+    // printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+    // printf("!!!!!!!!!TEST->NEXT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+    // printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+    // printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+    // print_tables(test->next);
+    // printf("---------------------------------------------------");
+    // printf("ARENA NODE INFO:\n");
+    // print_arena_node_info(test->next);
 
-//     // printf("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n");
+    // printf("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n");
 
-//     // printf("Arena 1 Addr: %p\n", test);
-//     // printf("Arena 2 Addr: %p\n", test->next);
-
-
-//     // printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-//     // printf("!!!!!!!!!TEST->NEXT->NEXT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-//     // printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-//     // printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-//     // print_tables(test->next->next);
-//     // printf("---------------------------------------------------");
-//     // printf("ARENA NODE INFO:\n");
-//     // print_arena_node_info(test->next->next);
-
-//     printf("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n");
-
-//     printf("Arena 1 Addr: %p\n", test);
-//     printf("Arena 2 Addr: %p\n", test->next);
+    // printf("Arena 1 Addr: %p\n", test);
+    // printf("Arena 2 Addr: %p\n", test->next);
 
 
-//     fflush(stdout);  
-//     //restores print to screen
-//     freopen("/dev/tty", "w", stdout);
+    // printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+    // printf("!!!!!!!!!TEST->NEXT->NEXT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+    // printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+    // printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+    // print_tables(test->next->next);
+    // printf("---------------------------------------------------");
+    // printf("ARENA NODE INFO:\n");
+    // print_arena_node_info(test->next->next);
 
-//     uintptr_t addr1 = 0;
-//     uintptr_t addr2 = 0;
-//     uintptr_t addr3 = 0;
-//     uintptr_t addr4 = 0;
-//     //uintptr_t addr5 = 0;
-//     //uintptr_t addr6 = 0;
+    printf("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n");
 
-//     printf("Enter first address: ");
-//     scanf("%" SCNxPTR, &addr1);
+    printf("Arena 1 Addr: %p\n", test);
+    //printf("Arena 2 Addr: %p\n", test->next);
+
+    printf("+++++++++++++++++++++++\n");
+    printf("+++++++++++++++++++++++\n");
+    rbt_print(&test->arena.arena_header.free_tree);
+
+    fflush(stdout);  
+    //restores print to screen
+    freopen("/dev/tty", "w", stdout);
+
+
+    uintptr_t addr1 = 0;
+    uintptr_t addr2 = 0;
+    uintptr_t addr3 = 0;
+    uintptr_t addr4 = 0;
+    //uintptr_t addr5 = 0;
+    //uintptr_t addr6 = 0;
+
+    printf("Enter first address: ");
+    scanf("%" SCNxPTR, &addr1);
     
-//     printf("Enter second address: ");
-//     scanf("%" SCNxPTR, &addr2);
+    printf("Enter second address: ");
+    scanf("%" SCNxPTR, &addr2);
     
-//     printf("Enter third (32) address: ");
-//     scanf("%" SCNxPTR, &addr3);
+    printf("Enter third (32) address: ");
+    scanf("%" SCNxPTR, &addr3);
     
-//     printf("Enter fourth (32) address: ");
-//     scanf("%" SCNxPTR, &addr4);
+    printf("Enter fourth (32) address: ");
+    scanf("%" SCNxPTR, &addr4);
     
-//     // printf("Enter fifth address: ");
-//     // scanf("%" SCNxPTR, &addr5);
+    // printf("Enter fifth address: ");
+    // scanf("%" SCNxPTR, &addr5);
     
-//     // printf("Enter sixth address: ");
-//     // scanf("%" SCNxPTR, &addr6);
+    // printf("Enter sixth address: ");
+    // scanf("%" SCNxPTR, &addr6);
     
-//     //char *ptr1 = (char *)addr1 + sizeof(Chunk_Header);
-//     char *ptr1 = (char *)addr1;
-//     //memset(ptr1, '!', 5000);
-//     strcpy(ptr1, "Hello world!\n");
+    //char *ptr1 = (char *)addr1 + sizeof(Chunk_Header);
+    char *ptr1 = (char *)addr1;
+    //memset(ptr1, '!', 5000);
+    strcpy(ptr1, "Hello world!\n");
 
-//     //char *ptr2 = (char *)addr2 + sizeof(Chunk_Header);
-//     char *ptr2 = (char *)addr2;
-//     //memset(ptr2, '+', 5000);
-//     strcpy(ptr2, "This is Not a Drill!!!\n");
+    //char *ptr2 = (char *)addr2 + sizeof(Chunk_Header);
+    char *ptr2 = (char *)addr2;
+    //memset(ptr2, '+', 5000);
+    strcpy(ptr2, "This is Not a Drill!!!\n");
    
-//     char *ptr3 = (char *)addr3;
-//     strcpy(ptr3, "NUMERO TRES!\n");
+    char *ptr3 = (char *)addr3;
+    strcpy(ptr3, "NUMERO TRES!\n");
     
-//     char *ptr4 = (char *)addr4;
-//     strcpy(ptr4, "NUMERO QUATRO!\n");
+    char *ptr4 = (char *)addr4;
+    strcpy(ptr4, "NUMERO QUATRO!\n");
 
-//     // char *ptr5 = (char *)addr5;
-//     // memset(ptr5, '!', 5000);
+    // char *ptr5 = (char *)addr5;
+    // memset(ptr5, '!', 5000);
 
-//     // char *ptr6 = (char *)addr6;
-//     // memset(ptr6, '+', 5000);
+    // char *ptr6 = (char *)addr6;
+    // memset(ptr6, '+', 5000);
 
-//     printf("ptr1 string: %s", ptr1);
-//     printf("ptr1 string pointer address: %p\n", ptr1);
-//     printf("ptr2 string: %s", ptr2);
-//     printf("ptr2 string pointer address: %p\n", ptr2);
-//     printf("ptr3 string: %s", ptr3);
-//     printf("ptr3 string pointer address: %p\n", ptr3);
-//     printf("ptr4 string: %s", ptr4);
-//     printf("ptr4 string pointer address: %p\n", ptr4);
-//     // printf("ptr5 string: %s", ptr5);
-//     // printf("ptr5 string pointer address: %p\n", ptr5);
-//     // printf("ptr6 string: %s", ptr6);
-//     // printf("ptr6 string pointer address: %p\n", ptr6);
+    printf("ptr1 string: %s", ptr1);
+    printf("ptr1 string pointer address: %p\n", ptr1);
+    printf("ptr2 string: %s", ptr2);
+    printf("ptr2 string pointer address: %p\n", ptr2);
+    printf("ptr3 string: %s", ptr3);
+    printf("ptr3 string pointer address: %p\n", ptr3);
+    printf("ptr4 string: %s", ptr4);
+    printf("ptr4 string pointer address: %p\n", ptr4);
+    // printf("ptr5 string: %s", ptr5);
+    // printf("ptr5 string pointer address: %p\n", ptr5);
+    // printf("ptr6 string: %s", ptr6);
+    // printf("ptr6 string pointer address: %p\n", ptr6);
  
 
 
-//     my_free(ptr1);
+    my_free(ptr1);
 
     
-//     freopen("logs.txt", "a", stdout);
+    freopen("logs.txt", "a", stdout);
     
-//     printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-//     printf("!!!!!!!!!UPDATE: FREED ptr1!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-//     printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-//     printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-//     print_tables(test);
-//     printf("---------------------------------------------------");
-//     printf("ARENA NODE INFO:\n");
-//     print_arena_node_info(test);
+    printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+    printf("!!!!!!!!!UPDATE: FREED ptr1!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+    printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+    printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+    print_tables(test);
+    printf("---------------------------------------------------");
+    printf("ARENA NODE INFO:\n");
+    print_arena_node_info(test);
 
-//     printf("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n");
-
-
-//     my_free(ptr2);
-
-//     printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-//     printf("!!!!!!!!!UPDATE: FREED ptr2!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-//     printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-//     printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-//     print_tables(test);
-//     printf("---------------------------------------------------");
-//     printf("ARENA NODE INFO:\n");
-//     print_arena_node_info(test);
-
-//     printf("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n");
+    printf("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n");
 
 
-//     my_free(ptr3);
+    my_free(ptr2);
 
-//     printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-//     printf("!!!!!!!!!UPDATE: FREED ptr3!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-//     printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-//     printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-//     print_tables(test);
-//     printf("---------------------------------------------------");
-//     printf("ARENA NODE INFO:\n");
-//     print_arena_node_info(test);
+    printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+    printf("!!!!!!!!!UPDATE: FREED ptr2!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+    printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+    printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+    print_tables(test);
+    printf("---------------------------------------------------");
+    printf("ARENA NODE INFO:\n");
+    print_arena_node_info(test);
 
-//     printf("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n");
+    printf("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n");
+
+
+    my_free(ptr3);
+
+    printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+    printf("!!!!!!!!!UPDATE: FREED ptr3!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+    printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+    printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+    print_tables(test);
+    printf("---------------------------------------------------");
+    printf("ARENA NODE INFO:\n");
+    print_arena_node_info(test);
+
+    printf("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n");
     
-//     fflush(stdout);  
+    fflush(stdout);  
 
 
-//     my_malloc(100 * sizeof(char));
+    my_malloc(100 * sizeof(char));
 
-//     printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-//     printf("!!!!!!!!!UPDATE: ADDED space for ptr5!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-//     printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-//     printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-//     print_tables(test);
-//     printf("---------------------------------------------------");
-//     printf("ARENA NODE INFO:\n");
-//     print_arena_node_info(test);
+    printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+    printf("!!!!!!!!!UPDATE: ADDED space for ptr5!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+    printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+    printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+    print_tables(test);
+    printf("---------------------------------------------------");
+    printf("ARENA NODE INFO:\n");
+    print_arena_node_info(test);
 
-//     printf("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n");
+    printf("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n");
     
-//     fflush(stdout);  
+    fflush(stdout);  
 
-//     //restores print to screen
-//     freopen("/dev/tty", "w", stdout);
+    //restores print to screen
+    freopen("/dev/tty", "w", stdout);
 
-//     uintptr_t addr5 = 0;
-//     printf("Enter fifth (128) address: ");
-//     scanf("%" SCNxPTR, &addr5);
+    uintptr_t addr5 = 0;
+    printf("Enter fifth (128) address: ");
+    scanf("%" SCNxPTR, &addr5);
     
-//     char *ptr5 = (char *)addr5;
-//     strcpy(ptr5, "NUMERO CINCO!\n");
+    char *ptr5 = (char *)addr5;
+    strcpy(ptr5, "NUMERO CINCO!\n");
     
-//     printf("ptr5 string: %s", ptr5);
-//     printf("ptr5 string pointer address: %p\n", ptr5);
+    printf("ptr5 string: %s", ptr5);
+    printf("ptr5 string pointer address: %p\n", ptr5);
     
    
-//     fflush(stdout);  
+    fflush(stdout);  
 
-//     freopen("logs.txt", "a", stdout);
+    freopen("logs.txt", "a", stdout);
 
 
-//     my_free(ptr4);
+    my_free(ptr4);
     
-//     printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-//     printf("!!!!!!!!!UPDATE: FREED ptr4!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-//     printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-//     printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-//     print_tables(test);
-//     printf("---------------------------------------------------");
-//     printf("ARENA NODE INFO:\n");
-//     print_arena_node_info(test);
+    printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+    printf("!!!!!!!!!UPDATE: FREED ptr4!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+    printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+    printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+    print_tables(test);
+    printf("---------------------------------------------------");
+    printf("ARENA NODE INFO:\n");
+    print_arena_node_info(test);
 
-//     printf("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n");
+    printf("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n");
     
-//     fflush(stdout);  
+    fflush(stdout);  
 
 
 
-//     my_free(ptr5);
+    my_free(ptr5);
 
-//     fflush(stdout);
-//     fclose(log);
+    fflush(stdout);
+    fclose(log);
 
-//     //my_free(ptr5);
-//     //my_free(ptr6);
+    my_free(ptr5);
+    //my_free(ptr6);
+    
+    printf("ptr2 after free: %s", ptr2);
+    printf("ptr2 string pointer address: %p\n", ptr2 - sizeof(Chunk_Header));
+
+    printf("ptr1 string: %s", ptr1);
+    printf("ptr1 string pointer address: %p\n", ptr1 - sizeof(Chunk_Header));
    
-//     printf("ptr2 after free: %s", ptr2);
-//     printf("ptr2 string pointer address: %p\n", ptr2 - sizeof(Chunk_Header));
-
-//     printf("ptr1 string: %s", ptr1);
-//     printf("ptr1 string pointer address: %p\n", ptr1 - sizeof(Chunk_Header));
-  
-//     // printf("SIZE OF ARENA LIST NODE: %ld", sizeof(Arena_List_Node)); 
+    printf("SIZE OF ARENA LIST NODE: %ld", sizeof(Arena_List_Node)); 
     
    
  
-//     return 0;
-// }
+     return 0;
+}
+*/
 
 //--------------MALLOC FRONT END TESTING-----------------------//
 
-// int main(void){
-//     char *test1 = my_malloc(62 * sizeof(char));
-//     if (!test1)
-//     {
-//         printf("Error allocating memory.\n");
-//     }
+int main(void){
+    char *test1 = my_malloc(62 * sizeof(char));
+    if (!test1)
+    {
+        printf("Error allocating memory.\n");
+    }
 
-//     strcpy(test1, "Hello World!\n");
+    strcpy(test1, "Hello World!\n");
 
 
-//     char *test2 = my_malloc(1000 * sizeof(char));
-//     if (!test2)
-//     {
-//         printf("Error allocating memory.\n");
-//     }
+    char *test2 = my_malloc(1000 * sizeof(char));
+    if (!test2)
+    {
+        printf("Error allocating memory.\n");
+    }
 
-//     strcpy(test2, "This is Not a Drill!!!\n");
+    strcpy(test2, "This is Not a Drill!!!\n");
     
     
-//     printf("test string: %s", test1);
-//     printf("test string pointer address: %p\n", test1);
-//     printf("test string: %s", test2);
-//     printf("test string pointer address: %p\n", test2);
+    printf("test string #1: %s", test1);
+    printf("test string pointer address #1: %p\n", test1);
+    printf("test string #2: %s", test2);
+    printf("test string pointer address #2: %p\n", test2);
     
-//     my_free(test1);
+    my_free(test1);
+    printf("test string: %s", test1);
+    printf("test string pointer address: %p\n", test1);
 
-//     my_free(test2);
+    my_free(test2);
 
-//     printf("test string: %s", test1);
-//     printf("test string pointer address: %p\n", test1);
-//     printf("test string: %s", test2);
-//     printf("test string pointer address: %p\n", test2);
+    printf("test string: %s", test2);
+    printf("test string pointer address: %p\n", test2);
  
-//     return 0;
-// }
+    return 0;
+}

@@ -6,11 +6,11 @@ CFLAGS  := -Wall -Wextra -Werror -g -D_POSIX_C_SOURCE=200809L
 TARGET  := ptests
 
 # Source and object files
-SRC     := p_tests.c my_malloc.c bitwise_helpers.c  
+SRC     := p_tests.c my_malloc.c bitwise_helpers.c RedBlackTree.c 
 OBJ     := $(SRC:.c=.o)
 
 # Headers
-HEADERS := arena.h
+HEADERS := arena.h RedBlackTree.h
 
 all: $(TARGET)
 

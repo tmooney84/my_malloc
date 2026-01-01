@@ -2,7 +2,7 @@
 #include "my_malloc.h"
 #include "arena.h"
 
-static size_t test_counter = 0;
+//static size_t test_counter = 0;
 /* ---------- Utility ---------- */
 
 // static RB_Node* create_node(int val) {
@@ -118,31 +118,31 @@ static void fix_insert(RB_Tree* tree, RB_Node* z) {
 }
 
 /* ---------- Insert for INITIAL TESTING ---------- */
-void rbt_insert(RB_Tree* tree, int val) {
-    RB_Node* z = create_node(val);
-    RB_Node* y = NULL;
-    RB_Node* x = tree->root;
+// void rbt_insert(RB_Tree* tree, int val) {
+//     RB_Node* z = create_node(val);
+//     RB_Node* y = NULL;
+//     RB_Node* x = tree->root;
 
-    while (x) {
-        y = x;
-        if (val < x->size)
-            x = x->left;
-        else
-            x = x->right;
-    }
+//     while (x) {
+//         y = x;
+//         if (val < x->size)
+//             x = x->left;
+//         else
+//             x = x->right;
+//     }
 
-    z->parent = y;
+//     z->parent = y;
 
-    if (!y)
-        tree->root = z;
-    else if (val < y->size)
-        y->left = z;
-    else
-        y->right = z;
+//     if (!y)
+//         tree->root = z;
+//     else if (val < y->size)
+//         y->left = z;
+//     else
+//         y->right = z;
 
-    fix_insert(tree, z);
-    return;
-}
+//     fix_insert(tree, z);
+//     return;
+// }
 
 //*!!!!!NEED UPDATE_TABLE FUNCTIONALITY FOR ONCE
 //!!!!! THE RB_POOL IS SET UP AND REMOVE NODE 
@@ -150,7 +150,7 @@ void rbt_insert(RB_Tree* tree, int val) {
 //      RE-INSERT REQUIRES DELETE_FROM_TABLE UPDATE!!!*/
 
 int rbt_re_insert_node(RB_Tree* tree, RB_Node *z) {
-    int val = z->size;
+    //int val = z->size;
     RB_Node* y = NULL;
     RB_Node* x = tree->root;
 
@@ -179,7 +179,7 @@ int rbt_re_insert_node(RB_Tree* tree, RB_Node *z) {
 }
 
 void rbt_initial_insert_node(RB_Tree* tree, RB_Node *z) {
-    int val = z->size;
+    //int val = z->size;
     z->color = RED;     //color initially set to RED
     RB_Node* y = NULL;
     RB_Node* x = tree->root;
@@ -313,7 +313,7 @@ static void fix_delete(RB_Tree* tree, RB_Node* x) {
 // }
 
 /* ---------- Search (Greater than or equal) ---------- */
-RB_Node *rbt_search_ge(RB_Node *root, int key) {
+RB_Node *rbt_search_ge(RB_Node *root, size_t key) {
     RB_Node *candidate = NULL;
     RB_Node *itr = root;
     while (itr!= NULL) {
@@ -321,7 +321,7 @@ RB_Node *rbt_search_ge(RB_Node *root, int key) {
             return itr;              // exact match
         }
         else if (key < itr->size) {
-            candidate = root;         // possible next-largest
+            candidate = itr;         // possible next-largest
             itr = itr->left;
         }
         else {
@@ -380,8 +380,8 @@ static RB_Node *delete_node(RB_Tree* tree, RB_Node* z) {
 }
 
 //Wrapper function to prevent changing tree->root
-RB_Node *rbt_remove_node(const RB_Tree *tree, RB_Node *node) {
-    return delete_node(tree->root, node);
+RB_Node *rbt_remove_node(RB_Tree *tree, RB_Node *node) {
+    return delete_node(tree, node);
 }
 
 // RB_Node *rbt_remove(RB_Tree* tree, int val) {

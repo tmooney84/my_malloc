@@ -122,14 +122,13 @@ void build_default_chunks_area(Arena_List_Node *node)
 //     return head;
 // }
 
-
 void build_free_tree(Arena_List_Node *al_node)
 {
     RB_Node *initial = &al_node->arena.node_pool[0];
     RB_Node *itr = initial;
-    for(int i = 0; i < NODE_POOL_SIZE - 1; i++)
+    for (int i = 0; i < NODE_POOL_SIZE; i++)
     {
-        //updates tree root logic as well
+        // updates tree root logic as well
         rbt_initial_insert_node(&al_node->arena.arena_header.free_tree, &itr[i]);
     }
 
@@ -207,7 +206,6 @@ void update_table_with_idx(Arena_List_Node *node, size_t chunk_size_idx, Chunk_O
 //         using pointer arithmetic... need to test and be careful of off
 //         by one errors... may need to copy the my_free logic???
 
-
 //         THEN ONCE SOLVED NEED TO TEST 3 large allocs and freeing middle
 //         one first
 //     */
@@ -273,21 +271,26 @@ void update_table_with_idx(Arena_List_Node *node, size_t chunk_size_idx, Chunk_O
 // }
 
 /******************RB_VERSION******************************** */
-char *alloc_arena_chunk(size_t m_size, Arena_List_Node *node){
+char *alloc_arena_chunk(size_t m_size, Arena_List_Node *node)
+{
     char *my_malloc_ptr = NULL;
-    RB_Node *found_node = rbt_find(&node->arena.arena_header.free_tree, m_size);
-    RB_Node *removed_node = rbt_remove_node(&node->arena.arena_header.free_tree, found_node); 
-    if(found_node == removed_node){
-        clear_node(removed_node);
-        Chunk_Header *ch = removed_node->assoc_c_h_addr;
-        my_malloc_ptr = (char *)ch + sizeof(Chunk_Header);
-        ch->flags = IN_USE;
-        update_table(node, removed_node->size, ADD_TO_TABLE);
-    }
+    size_t min_approp_size = next_pow2(m_size);
+    RB_Node *found_node = rbt_find(&node->arena.arena_header.free_tree, min_approp_size);
+    if (found_node != NULL)
+    {
+        RB_Node *removed_node = rbt_remove_node(&node->arena.arena_header.free_tree, found_node);
 
+        if (found_node == removed_node)
+        {
+            clear_rb_node(removed_node);
+            Chunk_Header *ch = removed_node->assoc_c_h_addr;
+            my_malloc_ptr = (char *)ch + sizeof(Chunk_Header);
+            ch->flags = IN_USE;
+            update_table(node, removed_node->size, ADD_TO_TABLE);
+        }
+    }
     return my_malloc_ptr;
 }
-
 
 // char *alloc_arena_chunk(size_t m_size, Arena_List_Node *node)
 // {
@@ -338,8 +341,8 @@ void build_arena(Arena_List_Node *node)
     build_free_tree(node);
 
     // // build_free_tree() >>> return root// head for linked list
-    //vvv RB_Tree version updates root with each node insert
-    //node->arena.arena_header.free_tree.root = build_free_tree(node);
+    // vvv RB_Tree version updates root with each node insert
+    // node->arena.arena_header.free_tree.root = build_free_tree(node);
 
     // // rb_tree >>> after building free tree, set node->arena.rb_tree = rb root node!!!
 
@@ -460,7 +463,7 @@ void *my_malloc(size_t m_size)
 
         printf("POINTER ADDR no arena and big @@@@@@@@@@@@@@@@@@@@@ %p\n", my_malloc_ptr);
         return my_malloc_ptr;
-        ///!!return head;
+        //!!!return head;
     }
 
     // 2) ARENA LIST EXISTS
@@ -481,7 +484,7 @@ void *my_malloc(size_t m_size)
                 break;
             }
 
-            else if (itr->arena.arena_header.large_alloc == true && itr->next != NULL)
+            else if (itr->arena.arena_header.large_alloc == true && itr->next)
             {
                 itr = itr->next;
             }
@@ -492,6 +495,13 @@ void *my_malloc(size_t m_size)
                 if (my_malloc_ptr != NULL)
                 {
                     return my_malloc_ptr;
+                }
+                if(my_malloc_ptr == NULL && itr->next)
+                {
+                    itr = itr->next;
+                }
+                else if(my_malloc_ptr == NULL && itr->next == NULL){
+                    break;
                 }
             }
             // if chunk not found, go to next arena
@@ -617,9 +627,6 @@ void unmap_arena_list_node(Arena_List_Node *curr_node)
     return;
 }
 
-
-
-
 /*******RB_TREE VERSION*********/
 void my_free(void *ptr)
 {
@@ -638,7 +645,7 @@ void my_free(void *ptr)
     // update RB_Node and add back in list + table
     RB_Node *curr_rb_node = (RB_Node *)curr_head->assoc_rb_node;
     size_t freed_node_num = curr_rb_node->rb_node_num;
-    size_t freed_node_size = curr_rb_node->size;
+    // size_t freed_node_size = curr_rb_node->size;
 
     char *rb_ptr = (char *)curr_rb_node;
     size_t curr_rb_node_offset = sizeof(RB_Node) * freed_node_num;
@@ -646,48 +653,27 @@ void my_free(void *ptr)
     char *curr_node_ptr = rb_ptr - curr_rb_node_offset - offsetof(Arena, node_pool[0]) - offsetof(Arena_List_Node, arena);
     Arena_List_Node *curr_node = (Arena_List_Node *)curr_node_ptr;
 
-    RB_Node *head = (RB_Node *)curr_node->arena.arena_header.free_tree.root;
-    RB_Node *itr = head;
-
-    size_t counter = 0;
-
     // if size larger than 2k
-    if (itr->size > MAX_SIZE)
+    if (curr_rb_node->size > MAX_SIZE)
     {
         unmap_arena_list_node(curr_node);
         return;
     }
 
-    if(0 == rbt_re_insert_node(&curr_node->arena.arena_header.free_tree, curr_rb_node)){
+    if (0 == rbt_re_insert_node(&curr_node->arena.arena_header.free_tree, curr_rb_node))
+    {
         update_table(curr_node, curr_rb_node->size, DELETE_FROM_TABLE);
     }
 
-        // then check table 0, arena node list stuff !!! should I do this here or below
+    // then check table 0, arena node list stuff !!! should I do this here or below
     if (true == check_zero_used(curr_node))
     {
         unmap_arena_list_node(curr_node);
         return;
     }
 
-    perror("Unable to free memory\n");
     return;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 // //---------------TODO: Need to memset() the returned memory to zero!!!------------
 // void my_free(void *ptr)
@@ -825,8 +811,9 @@ void my_free(void *ptr)
 
 // my_calloc >>> READY TO DEBUG
 void *my_calloc(size_t nmemb, size_t size)
- {
-    if(nmemb == 0 || size == 0){
+{
+    if (nmemb == 0 || size == 0)
+    {
         return NULL;
     }
     size_t m_size = nmemb * size;
@@ -850,33 +837,39 @@ void *my_calloc(size_t nmemb, size_t size)
     // or a unique pointer value that can later be successfully passed to free().
 */
 
-
 // my_realloc >>>READY TO DEBUG
-void *my_realloc(void *ptr, size_t size){
+void *my_realloc(void *ptr, size_t size)
+{
     Chunk_Header *ptr_chunk = (Chunk_Header *)(ptr - sizeof(Chunk_Header));
 
-    if(ptr == NULL && size == 0){
+    if (ptr == NULL && size == 0)
+    {
         return NULL;
     }
-    else if (ptr == NULL && size != 0){
+    else if (ptr == NULL && size != 0)
+    {
         ptr = my_malloc(size);
         return ptr;
     }
-    else if(ptr && size == 0){
+    else if (ptr && size == 0)
+    {
         my_free(ptr);
         return NULL;
     }
-    else if(ptr && size <= ptr_chunk->size){
-        //keep same chunk
+    else if (ptr && size <= ptr_chunk->size)
+    {
+        // keep same chunk
         return ptr;
     }
-    else if(ptr && size > ptr_chunk->size){
+    else if (ptr && size > ptr_chunk->size)
+    {
         void *new_ptr = my_malloc(size);
         memcpy(new_ptr, ptr, ptr_chunk->size);
         my_free(ptr);
         return new_ptr;
     }
-    else{
+    else
+    {
         perror("Unable to reallocate\n");
     }
     return NULL;
