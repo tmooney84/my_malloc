@@ -9,6 +9,7 @@
 
 #include "arena.h"
 #include "bitwise_helpers.h"
+#include "RedBlackTree.h"
 
 int build_rb_idx_table();
 size_t get_rb_node_size(uint32_t idx);
@@ -24,11 +25,12 @@ char *large_allocation(size_t m_size, Arena_List_Node *node);
 void build_arena(Arena_List_Node *node);
 Arena_List_Node *create_default_arena_list_node();
 Arena_List_Node *create_custom_arena_list_node(size_t size);
+bool check_zero_used(Arena_List_Node *node);
+void unmap_arena_list_node(Arena_List_Node *curr_node);
+
 void *my_malloc(size_t m_size);
 //!!!Arena_List_Node *my_malloc(size_t m_size);
 
-bool check_zero_used(Arena_List_Node *node);
-void unmap_arena_list_node(Arena_List_Node *curr_node);
 void my_free(void *ptr);
 void *my_calloc(size_t nmemb, size_t size);
 void *my_realloc(void *ptr, size_t size);
