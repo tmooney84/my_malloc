@@ -53,8 +53,7 @@ void *my_calloc(size_t nmemb, size_t size) >>> can be used alongside my_malloc()
 void *my_realloc(void *ptr, size_t size) >>> can be used alongside my_malloc() in place of my_realloc()
 
 
-### The Core Team
+### Future Improvements
 
-
-<span><i>Made at <a href='https://qwasar.io'>Qwasar SV -- Software Engineering School</a></i></span>
-<span><img alt='Qwasar SV -- Software Engineering School's Logo' src='https://storage.googleapis.com/qwasar-public/qwasar-logo_50x50.png' width='20px' /></span>
+1) Coalescing not implemented (but structure exists)
+2) Thread safety not implemented (but structure exists)
